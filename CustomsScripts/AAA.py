@@ -15,6 +15,7 @@ from pathlib import Path
 class TimerError(Exception):
     """A custom exception used to report errors in use of Timer class"""
 
+
 class Timer:
     def __init__(self):
         self._start_time = None
@@ -70,6 +71,12 @@ def exportIRtoWav(rawIR, filename, mono=False, norm=False):
 
     wavfile.write(filename, fs, signal)
 
+
+# fs, anechoicAudioSource = wavfile.read("../examples/samples/guitar_16k.wav")
+fs, anechoicAudioSource = wavfile.read("../examples/CustomSamples/Basic-808-Clap.wav")
+
+stl_path = Path("../PyroomMeshes/manyObjectsCube.stl")
+
 try:
     from stl import mesh
 except ImportError as err:
@@ -79,15 +86,9 @@ except ImportError as err:
     )
     raise err
 
-# fs, anechoicAudioSource = wavfile.read("../examples/samples/guitar_16k.wav")
-fs, anechoicAudioSource = wavfile.read("../examples/CustomSamples/Basic-808-Clap.wav")
-
-stl_path = Path("../PyroomMeshes/manyObjectsCube.stl")
 the_mesh = mesh.Mesh.from_file(stl_path)
-
 ntriang, nvec, npts = the_mesh.vectors.shape
 size_reduc_factor = 1  # to get a realistic room size (not 3km)
-
 material = pra.Material(energy_absorption=0.2, scattering=0.1)
 
 # create one wall per triangle
@@ -100,65 +101,62 @@ for w in range(ntriang):
             material.scattering["coeffs"],
         )
     )
-
-# sourceAudio = wavfile.read("../examples/CustomSamples/Basic-808-Clap.wav")
-fs, anechoicAudioSource = wavfile.read("../examples/CustomSamples/Basic-808-Clap.wav")
-
-theatreRoom = (
-    pra.Room(
-        walls,
-        fs=fs,
-        max_order=3,
-        ray_tracing=True,
-        air_absorption=True,
-    )
-    .add_source([0, 0, 1], signal=anechoicAudioSource)
-    .add_microphone_array(np.c_[[1, 2, 3], [3, 2, 1]])
-    # .add_microphone_array(pra.MicrophoneArray(np.array([[1, 2, 3]]).T, fs))
-    # .add_source([0, 8, 5])
-    # .add_microphone_array(np.c_[[0, -8, 5]])
-    # .add_microphone_array(np.c_[[-5,-7,2],[5,-7,2]])
-    # .add_microphone_array(np.c_[[3.8000, -3.7500, 1.3000],[2.4077, -7.3239, 1.3000],[5.0000, -2.0000, 3.5000],[3.5000, -8.2000, 3.5000],[5.1000, -2.0000, 5.8000],[4.0000, -8.5000, 5.8000],[5.1000, -2.0000, 8.2000],[4.0000, -8.5000, 8.2000],[-3.8000, -3.7500, 1.3000],[-2.4077, -7.3239, 1.3000],[-5.0000, -2.0000, 3.5000],[-3.5000, -8.2000, 3.5000],[-5.1000, -2.0000, 5.8000],[-4.0000, -8.5000, 5.8000],[-5.1000, -2.0000, 8.2000],[-4.0000, -8.5000, 8.2000]])
-)  
+  
+cubeRoom = pra.Room(
+    walls=walls,
+    fs=fs,
+    max_order=3,
+    ray_tracing=True,
+    air_absorption=True,
+)
 
 # source and mic locations
-theatreRoom.add_source([0, 0, 1], signal=anechoicAudioSource)
-theatreRoom.add_microphone_array(np.c_[[1, 2, 3]])
-# theatreRoom.add_microphone_array(pra.MicrophoneArray(np.array([[1, 2, 3]]).T, theatreRoom.fs))
+cubeRoom.add_source([0, 0, 1], signal=anechoicAudioSource)
+cubeRoom.add_microphone_array(np.c_[[1, 2, 3]])
+# cubeRoom.add_microphone_array(pra.MicrophoneArray(np.array([[1, 2, 3]]).T, cubeRoom.fs))
 
 plt.figure()
 # run ism
-theatreRoom.simulate()
+cubeRoom.simulate()
 
 # compute the rir
 t = Timer()
 t.start()
 
-theatreRoom.image_source_model()
+cubeRoom.image_source_model()
 t.show("ImageSource")
-theatreRoom.ray_tracing()
+cubeRoom.ray_tracing()
 t.show("RayTracing")
-theatreRoom.compute_rir()
+cubeRoom.compute_rir()
 t.show("RIR")
-theatreRoom.plot_rir()
+cubeRoom.plot_rir()
 t.show("Plot-RIR")
 
 
  
 # this plots the RIR between the 1st source and the 1st microphone
-# rir_time = np.arange(len(theatreRoom.rir[0][0])) / theatreRoom.fs
-# plt.plot(rir_time, theatreRoom.rir[0][0])
+# rir_time = np.arange(len(cubeRoom.rir[0][0])) / cubeRoom.fs
+# plt.plot(rir_time, cubeRoom.rir[0][0])
 
 
 
 # ---------------Normal usecase, export what the mic recorded in the room (the source+applied IR)---------------
 # But it's not the IR itself
-theatreRoom.mic_array.to_wav("MicAudio.wav", mono=True, norm=True, bitdepth=np.int16)
- 
+cubeRoom.mic_array.to_wav("MicAudio.wav", mono=True, norm=True, bitdepth=np.int16)
+
+# ---------------Custom call to the same to_wav function---------------
+# to_wav(
+#     self=cubeRoom.mic_array,
+#     filename="BB.wav",
+#     mono=False,
+#     norm=False,
+#     bitdepth=np.int16,
+# )
+
 # ---------------Custom call with rawIR instead of mic signals---------------
  
 # exportIRtoWav(
-#     rawIR=theatreRoom.rir,
+#     rawIR=cubeRoom.rir,
 #     filename="IR.wav",
 #     mono=False,
 #     norm=True,
@@ -167,3 +165,4 @@ theatreRoom.mic_array.to_wav("MicAudio.wav", mono=True, norm=True, bitdepth=np.i
 t.show("Wav Export")
 t.stop()
 plt.show()
+ 

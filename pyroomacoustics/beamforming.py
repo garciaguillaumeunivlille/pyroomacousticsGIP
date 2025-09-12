@@ -497,6 +497,7 @@ class MicrophoneArray(object):
 
         if mono is True:
             signal = self.signals[self.M // 2]
+            print(signal)
         else:
             signal = self.signals.T  # each column is a channel
 
