@@ -148,7 +148,7 @@ t.show("Plot-RIR")
 
 # ---------------Normal usecase, export what the mic recorded in the room (the source+applied IR)---------------
 # But it's not the IR itself
-# theatreRoom.mic_array.to_wav("MicAudio.wav", mono=True, norm=True, bitdepth=np.int16)
+theatreRoom.mic_array.to_wav("MicAudio.wav", mono=True, norm=True, bitdepth=np.int16)
 
 # ---------------Custom call with rawIR instead of mic signals---------------
 

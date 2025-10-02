@@ -49,10 +49,13 @@ class Timer:
         print(f"{fromText} elapsed time : {elapsed_time:0.4f} seconds")
 
 
-JSONData = {}
+x = 1.0
+mat = pra.Material(energy_absorption=x, scattering=0.0)
+# folderpath = f"./IR{x}"
+# os.mkdir(folderpath)
 
 
-def exportIRstoWav(rawIR, filename, norm=False):
+def exportIRsToWav(rawIRs, filename, norm=False):
     """
     CUSTOM
     """
@@ -61,42 +64,64 @@ def exportIRstoWav(rawIR, filename, norm=False):
     float_types = [float, float, np.float32, np.float64]
     bitdepth = float_types[0]
 
-    # signal = rawIR
-    formattedIR = np.asarray(rawIR, dtype="object")
+    # signal = rawIRs
+    print(type(rawIRs))
+    formattedIRs = np.asarray(rawIRs, dtype="object")
+    print(type(formattedIRs))
+    for i in range(0, len(formattedIRs)):
 
-    for i in range(0, len(formattedIR)):
-
-        # [micro][source]
-        signal = formattedIR[i][0]
-
-        # formattedIR = np.asarray(rawIR, dtype=bitdepth)
-        # signal = formattedIR[1 // 2]
-
+        signal = formattedIRs[i][0]  # [micro][source]
+ 
         if norm:
             from utilities import normalize
-
-            signal = normalize(signal, bits=bits)
+            signal = normalize(signal, bits=np.int8)
 
         signal = np.array(signal, dtype=bitdepth)
 
-        # Get volume
-        maxAmp = np.max(pra.doa.detect_peaks(signal))
-        # Get Source-Mic distance
-        m = microphoneMap.get(i + 1)
-        s = cubeRoom.sources[0].position
-        dist = np.linalg.norm(s - m)
+        # create .wav file
+        name = f"{filename}-{i+1}"
+        path = f"IR{x}/{name}.wav"
+        wavfile.write(path, fs, signal)
 
+        # store json data
+        pickUpDataFromSignal(signal, name, i)
+
+    formatAndWriteJSON(filename)
+
+JSONData = {}
+def pickUpDataFromSignal(signal, name, i):
+
+    # Get volume RootMinSquare sqr(avg(all [i]²))
+    volume = pra.rms(signal)
+    # maxAmp = np.max(pra.doa.detect_peaks(signal))
+
+    # Get Source-Mic distance
+    m = microphoneMap.get(i + 1)
+    s = cubeRoom.sources[0].position
+    dist = np.linalg.norm(s - m)
+ 
+    # detection of first ""peak"" > 0.000000
+    firstPeakIndex = pra.doa.detect_peaks(signal, mph=0.000001, show=True)[0]
+    peakDelay = firstPeakIndex / fs
+ 
+    irData = {
+        "distance": float(dist),
+        "volume": float(volume),
+        "peakDelay": float(peakDelay),
+    }
+    JSONData.update({name: irData})
+
+ 
+def formatAndWriteJSON(allAmps, allDists, filename):
+ 
+    for i in range(0, len(allAmps)):
         # Format
         irData = {
-            "distance": float(dist),
-            "volume": int(maxAmp),
+            "distance": float(allDists[i]),
+            "volume": float(allAmps[i]),
         }
-
-        name = f"{filename}-{i}"
-        path = "IR/" + name + ".wav"
-        wavfile.write(path, fs, signal)
+        name = f"{filename}-{i+1}"
         JSONData.update({name: irData})
-
     writeJsonFile()
 
 
@@ -107,8 +132,35 @@ def writeJsonFile():
     #  set output path and file name (set your own)
 
     #  write JSON file
-    with open("./IR/IR.json", "w") as outfile:
+    filepath = f"{folderpath}/IR{x}.json"
+    with open(filepath, "w") as outfile:
         outfile.write(data + "\n")
+
+
+def remapInRange(oldValue, oldMin, oldMax, newMin, newMax):
+
+    oldRange = oldMax - oldMin
+    if oldRange == 0:
+        return newMin
+    else:
+        newRange = newMax - newMin
+        return (((oldValue - oldMin) * newRange) / oldRange) + newMin
+
+
+def remapAmplitudesToDistance(amplitudes, distances):
+    res = []
+    # min à 0
+    minA = min(amplitudes)
+    # max à
+    maxA = max(amplitudes)
+    minD = min(distances)
+    maxD = max(distances)
+
+    for amp in amplitudes:
+        remapedAmplitude = remapInRange(amp, minA, maxA, minD, maxD)
+        res.append(remapedAmplitude)
+
+    return res
 
 
 try:
@@ -136,10 +188,11 @@ size_reduc_factor = 1  # to get a realistic room size (not 3km)
 
 
 allMeshesGeometry = []
-
+# mat = pra.Material(energy_absorption=1, scattering=0.2)
+# mat = pra.Material(energy_absorption=1, scattering=1.0)
 materials = [
-    pra.Material(energy_absorption=0.9, scattering=0.01),
-    pra.Material(energy_absorption=0.9, scattering=0.01),
+    mat,
+    mat,
     # pra.Material(energy_absorption=0.3, scattering=0.3),
     # pra.Material(energy_absorption=0.4, scattering=0.4),
 ]
@@ -200,7 +253,11 @@ microphoneMap = {
     15: [4.0, -8.5, 8.2],
     16: [-4.0, -8.5, 8.2],
 }
+# ################################### recheck mic positions
+# display axes
 
+
+# regen files
 
 # Making pyroom mic array from the map
 microphoneArray = []
@@ -264,14 +321,14 @@ t.show("Plot-RIR")
 #     bitdepth=np.int16,
 # )
 
-# ---------------Custom call with rawIR instead of mic signals---------------
+# ---------------Custom call with rawIRs instead of mic signals---------------
 
-exportIRstoWav(
-    rawIR=cubeRoom.rir,
+exportIRsToWav(
+    rawIRs=cubeRoom.rir,
     filename="IR",
     norm=False,
 )
 
 # t.show("Wav Export")
 # t.stop()
-plt.show()
+# plt.show()
