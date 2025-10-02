@@ -229,10 +229,14 @@ for sourceLabel, pos in sourcesMap.items():
     TheatreRoom.simulate()
     # t.show("Plot-RIR")
     t.show('simulate')
+
     # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
     allRawIRs = TheatreRoom.rir
     # required conversion from list to nparray
     formattedIRs = np.asarray(allRawIRs, dtype="object")
+
+    # Create a plot
+    plt.figure()
 
     # mic loop through each IR
     if len(microphoneArray) == len(formattedIRs):
@@ -247,7 +251,12 @@ for sourceLabel, pos in sourcesMap.items():
             # store json data
             makeJsonData(signal, fileName, i, showGraph=False)
 
-    plt.title(sourceLabel)
+                # plot signal at microphone 1
+            plt.subplot(len(microphoneArray), 1, i+1)
+            plt.plot(TheatreRoom.mic_array.signals[i])
+            plt.title(f"Microphone {i} signal")
+            plt.xlabel("Time [s]")
+ 
     plt.savefig(f"{folderpath}/{sourceLabel}.png")
 
 writeJsonFile()
@@ -255,4 +264,4 @@ writeJsonFile()
 
 t.show("Wav Export")
 t.stop()
-plt.show()
+
