@@ -168,30 +168,11 @@ size_reduc_factor = 1  # to get a realistic room size (not 3km)
 # il reste à trouver les bonnes valeurs
 
 meshMatMap = {
-    "Fabric": {
-        "stlPath": "TheatreJoined.001.stl",
-        "material": pra.Material(energy_absorption=0.1, scattering=0.8),
-    },
-    "Stone": {
-        "stlPath": "TheatreJoined.002.stl",
-        "material": pra.Material(energy_absorption=0.1, scattering=0.8),
-    },
-    "Dry Wall": {
-        "stlPath": "TheatreJoined.003.stl",
-        "material": pra.Material(energy_absorption=0.1, scattering=0.8),
-    },
-    "Worked Wood": {
-        "stlPath": "TheatreJoined.004.stl",
-        "material": pra.Material(energy_absorption=0.1, scattering=0.8),
-    },
-    "Smooth Wood": {
-        "stlPath": "TheatreJoined.005.stl",
-        "material": pra.Material(energy_absorption=0.1, scattering=0.8),
+    "roomOUT": {
+        "stlPath": "roomOccIN.stl",
+        "material": pra.Material(energy_absorption=1.0, scattering=0.0),
     },
 }
-
-# 0.01 "source non trouvée" ?
-# 0.1 fine
 
 # import des fichiers stl séparés par matériaux distincts, avec un nombre et ordre prédéfini
 allMeshesGeometry = []
@@ -199,7 +180,7 @@ for k, v in meshMatMap.items():
 
     # import des fichiers stl
     path = v["stlPath"]
-    the_mesh = mesh.Mesh.from_file(Path(f"../PyroomMeshes/{path}"))
+    the_mesh = mesh.Mesh.from_file(Path(f"../PyroomMeshes/MetricMeshes/{path}"))
     ntriang, nvec, npts = the_mesh.vectors.shape
 
     # create one wall per triangle
@@ -212,102 +193,84 @@ for k, v in meshMatMap.items():
                 v["material"].scattering["coeffs"],
             )
         )
-t.show("Done STL imports")
+# t.show("Done STL imports")
 
-TheatreRoom = pra.Room(
+metricRoom = pra.Room(
     walls=allMeshesGeometry,
     fs=fs,
-    max_order=2,
+    max_order=3,
     ray_tracing=True,
     air_absorption=True,
 )
 
-t.show("Room created")
+# t.show("Room created")
 
 # rayon de captation des rayons (plus grand = plus rapide mais - précis)
-TheatreRoom.set_ray_tracing(receiver_radius=0.5)  # default =0.5
+metricRoom.set_ray_tracing(receiver_radius=0.5)  # default =0.5
+
 
 # sources/mic locations
-sourcesMap = {
-    "A": [-1.75, 9.15, 3.3572],
-    "B": [1.75, 9.15, 3.3572],
-    "C": [3.0, 2.0, 3.3572],
-    "D": [-3.0, 2.0, 3.3572],
-    "E": [-3.35, -1.0, 1.4],
-    "F": [0.0, -1.0, 1.4],
-    "G": [3.35, -1.0, 1.4],
-}
+sourcesMap = {"A": [-3, 3, 5], "B": [-3, 3, 1]}
 microphonesMap = {
-    1: [-3.8, -3.75, 1.3],
-    2: [3.8, -3.75, 1.3],
-    3: [2.4077, -7.3239, 1.3],
-    4: [-2.4077, -7.3239, 1.3],
-    5: [-5.0, -2.0, 3.5],
-    6: [5.0, -2.0, 3.5],
-    7: [3.5, -8.2, 3.5],
-    8: [-3.5, -8.2, 3.5],
-    9: [-5.1, -2.0, 5.8],
-    10: [5.1, -2.0, 5.8],
-    11: [4.0, -8.5, 5.8],
-    12: [-4.0, -8.5, 5.8],
-    13: [-5.1, -2.0, 8.2],
-    14: [5.1, -2.0, 8.2],
-    15: [4.0, -8.5, 8.2],
-    16: [-4.0, -8.5, 8.2],
+    1: [3, -3, 1],
+    2: [3, 3, 4],
+    # 3: [-2, -2, 6]
 }
 
 # Making pyroom mic array from the map, to add them in the room
 microphoneArray = list(microphonesMap.values())  # [[mx,my,mz],[mx,my,mz]...]
-TheatreRoom.add_microphone_array(
+metricRoom.add_microphone_array(
     pra.MicrophoneArray(
         R=np.array(object=microphoneArray).T,
-        fs=TheatreRoom.fs,
+        fs=metricRoom.fs,
         directivity=(
-            None if TheatreRoom.ray_tracing else pra.directivities.Omnidirectional()
+            None if metricRoom.ray_tracing else pra.directivities.Omnidirectional()
         ),
     )
 )
-t.show("setup microphones")
+# t.show("setup microphones")
 
-# for m in TheatreRoom.mic_array:
+# for m in metricRoom.mic_array:
 #     print(m.receiver_radius)
 
 # Render folder
-folderpath = f"./IRtest"
+folderpath = f"./metric"
 if not os.path.exists(folderpath):
     os.makedirs(folderpath)
 
 
-t.show("start main loop")
+# t.show("start main loop")
 # Main Loop
 for sourceLabel, sourcePos in sourcesMap.items():
 
-    if TheatreRoom.sources:
-        TheatreRoom.sources.clear()
-    TheatreRoom.add_source(sourcePos, signal=anechoicAudioSource)
+    if metricRoom.sources:
+        metricRoom.sources.clear()
+    metricRoom.add_source(sourcePos, signal=anechoicAudioSource)
 
-    if TheatreRoom.rir:
-        TheatreRoom.rir.clear()
+    if metricRoom.rir:
+        metricRoom.rir.clear()
 
-    TheatreRoom.plot()
+    metricRoom.plot()
     # check refelxion order parameters
 
-    t.show("begin image source")
+    # plt.show()
+
+    # t.show("begin image source")
     # This function will generate all the images sources up to the order required and use them to generate the RIRs, which will be stored in the rir attribute of room.
-    TheatreRoom.image_source_model()
-    t.show(f"--ImageSource for source {sourceLabel}--")
+    metricRoom.image_source_model()
+    # t.show(f"--ImageSource for source {sourceLabel}--")
 
-    if TheatreRoom.ray_tracing:
-        TheatreRoom.ray_tracing()
-        t.show(f"--RayTracing for source {sourceLabel}--")
+    if metricRoom.ray_tracing:
+        metricRoom.ray_tracing()
+        # t.show(f"--RayTracing for source {sourceLabel}--")
 
-    # TheatreRoom.plot_rir()
-    TheatreRoom.simulate()
+    # metricRoom.plot_rir()
+    metricRoom.simulate()
     # t.show("Plot-RIR")
-    t.show(f"--Simulate sound with source {sourceLabel}--")
+    # t.show(f"--Simulate sound with source {sourceLabel}--")
 
     # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
-    computedIRs = TheatreRoom.rir
+    computedIRs = metricRoom.rir
 
     # Create a plot
     plt.figure()
@@ -329,7 +292,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
             )
 
             printIndex = micLoopIndex + 1
-            t.show(f"Export {wavFileName} {printIndex}/{len(computedIRs)}")
+            # t.show(f"Export {wavFileName} {printIndex}/{len(computedIRs)}")
 
             # store json data
             makeJsonData(
@@ -345,7 +308,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
 
             # plot signal at microphone 1
             plt.subplot(len(microphoneArray), 1, printIndex)
-            plt.plot(TheatreRoom.mic_array.signals[micLoopIndex])
+            plt.plot(metricRoom.mic_array.signals[micLoopIndex])
             plt.title(f"Microphone {printIndex} signal")
             plt.xlabel("Time [s]")
             micLoopIndex += 1
@@ -355,5 +318,5 @@ for sourceLabel, sourcePos in sourcesMap.items():
     plt.savefig(f"{folderpath}/{sourceLabel}.png")
 
 writeJsonFile()
-t.show("Json Export")
+# t.show("Json Export")
 t.stop()
