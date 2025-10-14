@@ -167,28 +167,29 @@ size_reduc_factor = 1  # to get a realistic room size (not 3km)
 # Le code en cours est pour préparer le rendu avec plusieurs matériaux,
 # il reste à trouver les bonnes valeurs
 
-# pra.Material(energy_absorption=0.1, scattering=0.8)
+idealMat = pra.Material(energy_absorption=0.1, scattering=0.8)
+safeMat = pra.Material(energy_absorption=1.0, scattering=0.0)
 
 meshMatMap = {
     # "Fabric": {
     #     "stlPath": "TheatreJoined.001.stl",
-    #     "material": pra.Material(energy_absorption=1.0, scattering=0.0),
+    #     "material": idealMat,
     # },
     "Stone": {
         "stlPath": "TheatreJoined.002.stl",
-        "material": pra.Material(energy_absorption=1.0, scattering=0.0),
+        "material": idealMat,
     },
     # "Dry Wall": {
     #     "stlPath": "TheatreJoined.003.stl",
-    #     "material": pra.Material(energy_absorption=1.0, scattering=0.0),
+    #     "material": idealMat,
     # },
     "Worked Wood": {
         "stlPath": "TheatreJoined.004.stl",
-        "material": pra.Material(energy_absorption=1.0, scattering=0.0),
+        "material": idealMat,
     },
     "Smooth Wood": {
         "stlPath": "TheatreJoined.005.stl",
-        "material": pra.Material(energy_absorption=1.0, scattering=0.0),
+        "material": idealMat,
     },
 }
 
