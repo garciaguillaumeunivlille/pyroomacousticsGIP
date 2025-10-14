@@ -18,8 +18,8 @@ _____________________________
 
 
 Opti
-- trouvé comment appliquer les paramètres en bandes pour les matériaux
-- modifier le nombre de rayon du raytracing
+OK> trouvé comment appliquer les paramètres en bandes pour les matériaux
+OK> modifier le nombre de rayon du raytracing
 > Fait des test pour opti le mesh
 > Corrections de normals à faire sur le model
 
@@ -40,9 +40,7 @@ number of rays : 114480
 --RayTracing for source A-- elapsed time : 13.1581 seconds
 
 
-Also des fois il y a des erreurs sans "raison"
-> parfois ça marche du deuxième coup sans avoir oublié de sauvgarder
-
+ 
 
 max_order=2,
 n_rays=10

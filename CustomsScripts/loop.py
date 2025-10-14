@@ -223,24 +223,24 @@ TheatreRoom = pra.Room(
 )
 
 # max_order=1 = 10s
-# max_order=2 = 100s
-# max_order=3 = ?
+# max_order=2 = 1m40s
+# max_order=3 = 15m
 
 
 t.show("Room created")
 
 # rayon de captation des rayons (plus grand = plus rapide mais - précis)
-TheatreRoom.set_ray_tracing(receiver_radius=0.5,n_rays=10)  # default =0.5
+TheatreRoom.set_ray_tracing(receiver_radius=0.5)  # default =0.5
 
 
 # sources/mic locations
 sourcesMap = {
-    "A": [-1.75, 9.15, 3.3572],
+    # "A": [-1.75, 9.15, 3.3572],
     # "B": [1.75, 9.15, 3.3572],
     # "C": [3.0, 2.0, 3.3572],
     # "D": [-3.0, 2.0, 3.3572],
     # "E": [-3.35, -1.0, 1.4],
-    # "F": [0.0, -1.0, 1.4],
+    "F": [0.0, -1.0, 1.4],
     # "G": [3.35, -1.0, 1.4],
 }
 microphonesMap = {
@@ -279,7 +279,7 @@ t.show("setup microphones")
 #     print(m.receiver_radius)
 
 # Render folder
-folderpath = f"./IRtest"
+folderpath = f"./Generated-IRs"
 if not os.path.exists(folderpath):
     os.makedirs(folderpath)
 
@@ -295,7 +295,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
     if TheatreRoom.rir:
         TheatreRoom.rir.clear()
 
-    TheatreRoom.plot() 
+    TheatreRoom.plot()
 
     t.show("begin image source")
     # This function will generate all the images sources up to the order required and use them to generate the RIRs, which will be stored in the rir attribute of room.
@@ -304,7 +304,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
 
     if TheatreRoom.ray_tracing:
         TheatreRoom.ray_tracing()
-        nRays = TheatreRoom.rt_args['n_rays']
+        nRays = TheatreRoom.rt_args["n_rays"]
         print(f"number of rays : {nRays}")
         t.show(f"--RayTracing for source {sourceLabel}--")
 
