@@ -193,14 +193,52 @@ meshMatMap = {
     },
 }
 
+meshPartsINMap = {
+    "TheatreP_Amphi_IN": {
+        "stlPath": "TheatreP_Amphi_IN.stl",
+        "material": safeMat,
+    },
+    "TheatreP_Decors_IN": {
+        "stlPath": "TheatreP_Decors_IN.stl",
+        "material": safeMat,
+    },
+    "TheatreP_Roof_IN": {
+        "stlPath": "TheatreP_Roof_IN.stl",
+        "material": safeMat,
+    },
+    "TheatreP_Walls_IN": {
+        "stlPath": "TheatreP_Walls_IN.stl",
+        "material": safeMat,
+    },
+}
+meshPartsOUTMap = {
+    "TheatreP_Amphi_OUT": {
+        "stlPath": "TheatreP_Amphi_OUT.stl",
+        "material": safeMat,
+    },
+    "TheatreP_Decors_OUT": {
+        "stlPath": "TheatreP_Decors_OUT.stl",
+        "material": safeMat,
+    },
+    "TheatreP_Roof_OUT": {
+        "stlPath": "TheatreP_Roof_OUT.stl",
+        "material": safeMat,
+    },
+    "TheatreP_Walls_OUT": {
+        "stlPath": "TheatreP_Walls_OUT.stl",
+        "material": safeMat,
+    },
+}
+
 
 # import des fichiers stl séparés par matériaux distincts, avec un nombre et ordre prédéfini
 allMeshesGeometry = []
-for k, v in meshMatMap.items():
+for k, v in meshPartsOUTMap.items():
 
     # import des fichiers stl
     path = v["stlPath"]
-    the_mesh = mesh.Mesh.from_file(Path(f"../PyroomMeshes/{path}"))
+    # the_mesh = mesh.Mesh.from_file(Path(f"../PyroomMeshes/{path}"))
+    the_mesh = mesh.Mesh.from_file(Path(f"../PyroomMeshes/ReworkedMeshes/{path}"))
     ntriang, nvec, npts = the_mesh.vectors.shape
 
     # create one wall per triangle
@@ -215,23 +253,24 @@ for k, v in meshMatMap.items():
         )
 t.show("Done STL imports")
 
+useRayTracing = False
+
 TheatreRoom = pra.Room(
     walls=allMeshesGeometry,
     fs=fs,
     max_order=2,
-    ray_tracing=True,
+    ray_tracing=useRayTracing,
     air_absorption=True,
 )
-
 # max_order=1 = 10s
 # max_order=2 = 1m40s
 # max_order=3 = 15m
+t.show("Created Room")
+  
 
-
-t.show("Room created")
-
-# rayon de captation des rayons (plus grand = plus rapide mais - précis)
-TheatreRoom.set_ray_tracing(receiver_radius=0.5)  # default =0.5
+if useRayTracing:
+    # rayon de captation des rayons (plus grand = plus rapide mais - précis)
+    TheatreRoom.set_ray_tracing(receiver_radius=0.5)  # default =0.5
 
 
 # sources/mic locations
@@ -245,22 +284,22 @@ sourcesMap = {
     # "G": [3.35, -1.0, 1.4],
 }
 microphonesMap = {
-    1: [-3.8, -3.75, 1.3],
+    # 1: [-3.8, -3.75, 1.3],
     2: [3.8, -3.75, 1.3],
-    # 3: [2.4077, -7.3239, 1.3],
+    3: [2.4077, -7.3239, 1.3],
     # 4: [-2.4077, -7.3239, 1.3],
-    # 5: [-5.0, -2.0, 3.5],
-    # 6: [5.0, -2.0, 3.5],
+    5: [-5.0, -2.0, 3.5],
+    6: [5.0, -2.0, 3.5],
     # 7: [3.5, -8.2, 3.5],
-    # 8: [-3.5, -8.2, 3.5],
-    # 9: [-5.1, -2.0, 5.8],
-    # 10: [5.1, -2.0, 5.8],
-    # 11: [4.0, -8.5, 5.8],
+    8: [-3.5, -8.2, 3.5],
+    9: [-5.1, -2.0, 5.8],
+    10: [5.1, -2.0, 5.8],
+    11: [4.0, -8.5, 5.8],
     # 12: [-4.0, -8.5, 5.8],
-    # 13: [-5.1, -2.0, 8.2],
-    # 14: [5.1, -2.0, 8.2],
-    # 15: [4.0, -8.5, 8.2],
-    # 16: [-4.0, -8.5, 8.2],
+    13: [-5.1, -2.0, 8.2],
+    14: [5.1, -2.0, 8.2],
+    15: [4.0, -8.5, 8.2],
+    16: [-4.0, -8.5, 8.2],
 }
 
 # Making pyroom mic array from the map, to add them in the room
@@ -270,7 +309,7 @@ TheatreRoom.add_microphone_array(
         R=np.array(object=microphoneArray).T,
         fs=TheatreRoom.fs,
         directivity=(
-            None if TheatreRoom.ray_tracing else pra.directivities.Omnidirectional()
+            None if useRayTracing else pra.directivities.Omnidirectional()
         ),
     )
 )
@@ -303,7 +342,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
     TheatreRoom.image_source_model()
     t.show(f"--ImageSource for source {sourceLabel}--")
 
-    if TheatreRoom.ray_tracing:
+    if useRayTracing:
         TheatreRoom.ray_tracing()
         nRays = TheatreRoom.rt_args["n_rays"]
         print(f"number of rays : {nRays}")

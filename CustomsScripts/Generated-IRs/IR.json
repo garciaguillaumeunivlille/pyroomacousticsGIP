@@ -1,34 +1,18 @@
 {
- "F1": {
-  "IRPath": "F1.wav",
-  "distance": "4.691748",
-  "volume": "0.001400",
-  "lawfulVolume": "0.04542",
-  "volumeGap": "0.04402",
-  "peakDelay": "0.39156",
+ "F16": {
+  "IRPath": "F16.wav",
+  "distance": "10.885311",
+  "volume": "0.002093",
+  "lawfulVolume": "0.00843",
+  "volumeGap": "0.00634",
+  "peakDelay": "0.03310",
   "sourceID": "F",
   "sourceX": 0.0,
   "sourceY": -1.0,
   "sourceZ": 1.4,
-  "micID": "1",
-  "micX": -3.8,
-  "micY": -3.75,
-  "micZ": 1.3
- },
- "F2": {
-  "IRPath": "F2.wav",
-  "distance": "4.691748",
-  "volume": "0.001587",
-  "lawfulVolume": "0.04542",
-  "volumeGap": "0.04384",
-  "peakDelay": "0.33562",
-  "sourceID": "F",
-  "sourceX": 0.0,
-  "sourceY": -1.0,
-  "sourceZ": 1.4,
-  "micID": "2",
-  "micX": 3.8,
-  "micY": -3.75,
-  "micZ": 1.3
+  "micID": "16",
+  "micX": -4.0,
+  "micY": -8.5,
+  "micZ": 8.2
  }
 }
