@@ -2300,7 +2300,7 @@ class Room(object):
                 rir_parts = []
 
                 if self.simulator_state["ism_needed"]:
-                    ir_ism = compute_ism_rir(
+                    ir_ism = compute_ism_rir( #TRACK 3/5
                         src,
                         mic,
                         self.mic_array.directivity[m],
@@ -2640,9 +2640,11 @@ class Room(object):
         if self.mic_array is None:
             raise ValueError("There is no microphone in the room.")
 
+        print(f"DEBUG out: rir recomputed with conditions : {self.rir is None} | {len(self.rir) == 0} | {recompute_rir}")
         # compute RIR if necessary
         if self.rir is None or len(self.rir) == 0 or recompute_rir:
-            self.compute_rir()
+            print(f"DEBUG in: rir recomputed with conditions : {self.rir is None} | {len(self.rir) == 0} | {recompute_rir}")
+            self.compute_rir()#TRACK 2/5
 
         # number of mics and sources
         M = self.mic_array.M

@@ -167,8 +167,8 @@ size_reduc_factor = 1  # to get a realistic room size (not 3km)
 # Le code en cours est pour préparer le rendu avec plusieurs matériaux,
 # il reste à trouver les bonnes valeurs
 
-idealMat = pra.Material(energy_absorption=0.1, scattering=0.8)
-safeMat = pra.Material(energy_absorption=1.0, scattering=0.0)
+idealMat = pra.Material(energy_absorption=0.01, scattering=0.8)
+AbsMat = pra.Material(energy_absorption=1.0, scattering=0.0)
 
 meshMatMap = {
     # "Fabric": {
@@ -196,44 +196,44 @@ meshMatMap = {
 meshPartsINMap = {
     "TheatreP_Amphi_IN": {
         "stlPath": "TheatreP_Amphi_IN.stl",
-        "material": safeMat,
+        "material": idealMat,
     },
     "TheatreP_Decors_IN": {
         "stlPath": "TheatreP_Decors_IN.stl",
-        "material": safeMat,
+        "material": idealMat,
     },
     "TheatreP_Roof_IN": {
         "stlPath": "TheatreP_Roof_IN.stl",
-        "material": safeMat,
+        "material": idealMat,
     },
     "TheatreP_Walls_IN": {
         "stlPath": "TheatreP_Walls_IN.stl",
-        "material": safeMat,
+        "material": idealMat,
     },
 }
 meshPartsOUTMap = {
     "TheatreP_Amphi_OUT": {
         "stlPath": "TheatreP_Amphi_OUT.stl",
-        "material": safeMat,
+        "material": idealMat,
     },
     "TheatreP_Decors_OUT": {
         "stlPath": "TheatreP_Decors_OUT.stl",
-        "material": safeMat,
+        "material": idealMat,
     },
     "TheatreP_Roof_OUT": {
         "stlPath": "TheatreP_Roof_OUT.stl",
-        "material": safeMat,
+        "material": idealMat,
     },
     "TheatreP_Walls_OUT": {
         "stlPath": "TheatreP_Walls_OUT.stl",
-        "material": safeMat,
+        "material": idealMat,
     },
 }
 
 
 # import des fichiers stl séparés par matériaux distincts, avec un nombre et ordre prédéfini
 allMeshesGeometry = []
-for k, v in meshPartsOUTMap.items():
+for k, v in meshPartsINMap.items():
 
     # import des fichiers stl
     path = v["stlPath"]
@@ -285,21 +285,21 @@ sourcesMap = {
 }
 microphonesMap = {
     # 1: [-3.8, -3.75, 1.3],
-    2: [3.8, -3.75, 1.3],
+    # 2: [3.8, -3.75, 1.3],
     3: [2.4077, -7.3239, 1.3],
     # 4: [-2.4077, -7.3239, 1.3],
-    5: [-5.0, -2.0, 3.5],
-    6: [5.0, -2.0, 3.5],
+    # 5: [-5.0, -2.0, 3.5],
+    # 6: [5.0, -2.0, 3.5],
     # 7: [3.5, -8.2, 3.5],
-    8: [-3.5, -8.2, 3.5],
-    9: [-5.1, -2.0, 5.8],
-    10: [5.1, -2.0, 5.8],
-    11: [4.0, -8.5, 5.8],
+    # 8: [-3.5, -8.2, 3.5],
+    # 9: [-5.1, -2.0, 5.8],
+    # 10: [5.1, -2.0, 5.8],
+    # 11: [4.0, -8.5, 5.8],
     # 12: [-4.0, -8.5, 5.8],
-    13: [-5.1, -2.0, 8.2],
-    14: [5.1, -2.0, 8.2],
-    15: [4.0, -8.5, 8.2],
-    16: [-4.0, -8.5, 8.2],
+    # 13: [-5.1, -2.0, 8.2],
+    # 14: [5.1, -2.0, 8.2],
+    # 15: [4.0, -8.5, 8.2],
+    # 16: [-4.0, -8.5, 8.2],
 }
 
 # Making pyroom mic array from the map, to add them in the room
@@ -349,7 +349,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
         t.show(f"--RayTracing for source {sourceLabel}--")
 
     # TheatreRoom.plot_rir()
-    TheatreRoom.simulate()
+    TheatreRoom.simulate()#TRACK 1/5
     t.show(f"--Simulate sound with source {sourceLabel}--")
 
     # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.

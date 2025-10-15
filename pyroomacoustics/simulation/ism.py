@@ -306,7 +306,11 @@ def compute_ism_rir(
 
         # The image source which takes the most time to arrive to this
         # particular microphone
-        t_max = time.max()
+        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        Les modifs dans le lib ne sont pas appliqué :
+            - pas de print
+            - du texte brut ne casse pas la compil
+        t_max = time.max() #TRACK 4/5
 
         # Here we create an array of the right length to
         # receiver the full RIR
