@@ -2255,6 +2255,9 @@ class Room(object):
         self.rt_histograms = [[] for r in range(self.mic_array.M)]
 
         for s, src in enumerate(self.sources):
+            print("aaaaaaaaaa")
+            print( self.rt_args["n_rays"])
+            print(type(src.position))
             self.room_engine.ray_tracing(self.rt_args["n_rays"], src.position)
 
             for r in range(self.mic_array.M):
@@ -2639,11 +2642,10 @@ class Room(object):
             raise ValueError("There are no sound sources in the room.")
         if self.mic_array is None:
             raise ValueError("There is no microphone in the room.")
-
-        print(f"DEBUG out: rir recomputed with conditions : {self.rir is None} | {len(self.rir) == 0} | {recompute_rir}")
+ 
         # compute RIR if necessary
         if self.rir is None or len(self.rir) == 0 or recompute_rir:
-            print(f"DEBUG in: rir recomputed with conditions : {self.rir is None} | {len(self.rir) == 0} | {recompute_rir}")
+            print(f"DEBUG in: rir recomputed with conditions : {self.rir is None} | {recompute_rir}")
             self.compute_rir()#TRACK 2/5
 
         # number of mics and sources

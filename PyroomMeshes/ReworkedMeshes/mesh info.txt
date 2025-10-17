@@ -1,0 +1,7 @@
+TheatreP HighPoly ~2K :
+- split by parts not material(FOR TEST PURPOSE)
+- 2 version IN/OUT (FOR TEST PURPOSE)
+
+TheatreLOW
+ - low poly version
+ - IN/OUT (FOR TEST PURPOSE)

@@ -183,6 +183,7 @@ def compute_ism_rir(
 
     # dist shape (n) : n0 of image sources
     time = dist / c  # Calculate time of arrival for each image source
+    #TRACK 6
 
     oct_band_amplitude = att / dist
     full_band_imp_resp = []
@@ -307,9 +308,6 @@ def compute_ism_rir(
         # The image source which takes the most time to arrive to this
         # particular microphone
         print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        Les modifs dans le lib ne sont pas appliqué :
-            - pas de print
-            - du texte brut ne casse pas la compil
         t_max = time.max() #TRACK 4/5
 
         # Here we create an array of the right length to

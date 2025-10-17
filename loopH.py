@@ -158,8 +158,8 @@ except ImportError as err:
 # fs is samplerate as integer
 # audio source is numpy.ndarray
 fs, anechoicAudioSource = wavfile.read(
-    "../CustomSamples/Basic-808-Clap.wav"
-    # "../CustomSamples/IR-Dirac-44100-20hz-22050hz-1s.wav"
+    # "CustomSamples/Basic-808-Clap.wav"
+    "CustomSamples/IR-Dirac-44100-20hz-22050hz-1s.wav"
 )
 
 size_reduc_factor = 1  # to get a realistic room size (not 3km)
@@ -168,7 +168,9 @@ size_reduc_factor = 1  # to get a realistic room size (not 3km)
 # Le code en cours est pour préparer le rendu avec plusieurs matériaux,
 # il reste à trouver les bonnes valeurs
 
-idealMat = pra.Material(energy_absorption=0.01, scattering=0.8)
+idealMat = pra.Material(energy_absorption=1.0, scattering=0.0)
+# pra.Material(energy_absorption=0.01, scattering=0.8)
+# pra.Material("reverb_chamber")
 AbsMat = pra.Material(energy_absorption=1.0, scattering=0.0)
 
 meshMatMap = {
@@ -248,8 +250,8 @@ for k, v in meshLowOUTMap.items():
 
     # import des fichiers stl
     path = v["stlPath"]
-    # the_mesh = mesh.Mesh.from_file(Path(f"../PyroomMeshes/{path}"))
-    the_mesh = mesh.Mesh.from_file(Path(f"../PyroomMeshes/ReworkedMeshes/{path}"))
+    # the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/{path}"))
+    the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/ReworkedMeshes/{path}"))
     ntriang, nvec, npts = the_mesh.vectors.shape
 
     # create one wall per triangle
@@ -283,16 +285,19 @@ if useRayTracing:
     # rayon de captation des rayons (plus grand = plus rapide mais - précis)
     TheatreRoom.set_ray_tracing(receiver_radius=0.5)  # default =0.5
 
+tast = np.asarray([0.0, -1.0, 1.4], dtype=np.float32)
+print(tast)
+print(type(tast))
 
 # sources/mic locations
 sourcesMap = {
-    "A": [-1.75, 9.15, 3.3572],
-    "B": [1.75, 9.15, 3.3572],
-    "C": [3.0, 2.0, 3.3572],
-    "D": [-3.0, 2.0, 3.3572],
-    "E": [-3.35, -1.0, 1.4],
+    # "A": [-1.75, 9.15, 3.3572],
+    # "B": [1.75, 9.15, 3.3572],
+    # "C": [3.0, 2.0, 3.3572],
+    # "D": [-3.0, 2.0, 3.3572],
+    # "E": [-3.35, -1.0, 1.4],
     "F": [0.0, -1.0, 1.4],
-    "G": [3.35, -1.0, 1.4],
+    # "G": [3.35, -1.0, 1.4],
 }
 microphonesMap = {
     1: [-3.8, -3.75, 1.3],
@@ -348,19 +353,19 @@ for sourceLabel, sourcePos in sourcesMap.items():
 
     TheatreRoom.plot()
 
-    t.show("begin image source")
-    # This function will generate all the images sources up to the order required and use them to generate the RIRs, which will be stored in the rir attribute of room.
-    TheatreRoom.image_source_model()
-    t.show(f"--ImageSource for source {sourceLabel}--")
+    # t.show("begin image source")
+    # # This function will generate all the images sources up to the order required and use them to generate the RIRs, which will be stored in the rir attribute of room.
+    # TheatreRoom.image_source_model()
+    # t.show(f"--ImageSource for source {sourceLabel}--")
 
-    if useRayTracing:
-        TheatreRoom.ray_tracing()
-        nRays = TheatreRoom.rt_args["n_rays"]
-        print(f"number of rays : {nRays}")
-        t.show(f"--RayTracing for source {sourceLabel}--")
+    # if useRayTracing:
+    #     TheatreRoom.ray_tracing()
+    #     nRays = TheatreRoom.rt_args["n_rays"]
+    #     print(f"number of rays : {nRays}")
+    #     t.show(f"--RayTracing for source {sourceLabel}--")
 
     # TheatreRoom.plot_rir()
-    TheatreRoom.simulate()#TRACK 1/5
+    TheatreRoom.compute_rir()#TRACK 1/5
     t.show(f"--Simulate sound with source {sourceLabel}--")
 
     # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
@@ -401,10 +406,10 @@ for sourceLabel, sourcePos in sourcesMap.items():
             )
 
             # plot signal at microphone 1
-            plt.subplot(len(microphoneArray), 1, printIndex)
-            plt.plot(TheatreRoom.mic_array.signals[micLoopIndex])
-            plt.title(f"Microphone {printIndex} signal")
-            plt.xlabel("Time [s]")
+            # plt.subplot(len(microphoneArray), 1, printIndex)
+            # plt.plot(TheatreRoom.mic_array.signals[micLoopIndex])
+            # plt.title(f"Microphone {printIndex} signal")
+            # plt.xlabel("Time [s]")
             micLoopIndex += 1
     else:
         raise Exception(f"IR data is missing some Microphones indexes")

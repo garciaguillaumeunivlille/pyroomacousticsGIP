@@ -1,10 +1,10 @@
 🔘✅❌
-safeMat = pra.Material(energy_absorption=1.0, scattering=0.0)
+AbsMat = pra.Material(energy_absorption=1.0, scattering=0.0)
 idealMat = pra.Material(energy_absorption=0.01, scattering=0.8)
 
 ----------------------------------------------ImageSource only 2 Micros----------------------------------------------
 
-✅SafeMat OUT [IS][F 1-2]
+✅AbsMat OUT [IS][F 1-2]
 - IR OK
 LOG
   Done STL imports elapsed time : 0.0317 seconds
@@ -20,7 +20,7 @@ LOG
    Total elapsed time : 101.4608 seconds
 -----------------------------------------
 
-✅SafeMat IN [IS][F 1-2]
+✅AbsMat IN [IS][F 1-2]
 - IR ✅
 LOG
   Done STL imports elapsed time : 0.0700 seconds
@@ -67,60 +67,43 @@ LOG
   Json Export elapsed time : 50.9401 seconds
    Total elapsed time : 50.9403 seconds
 
-----------------------------------------------All Micros
-
-🔘SafeMat OUT [IS][F 1-16]
-- IR OK
-LOG
-
------------------------------------------
-
-🔘SafeMat IN [IS][F 1-16]
-- IR 🔘
-LOG
-
------------------------------------------
-
-🔘IdealMat OUT [IS][F 1-16]
-- IR 🔘
-LOG
-
+ 
 -----------------------------------------
 
 ❌IdealMat IN [IS][F 1-16]
-Done STL imports elapsed time : 0.0310 seconds
-Created Room elapsed time : 5.7689 seconds
-setup microphones elapsed time : 5.7694 seconds
-start main loop elapsed time : 5.7696 seconds
-begin image source elapsed time : 9.0729 seconds
---ImageSource for source F-- elapsed time : 473.5821 seconds
 LOG
+  Done STL imports elapsed time : 0.0310 seconds
+  Created Room elapsed time : 5.7689 seconds
+  setup microphones elapsed time : 5.7694 seconds
+  start main loop elapsed time : 5.7696 seconds
+  begin image source elapsed time : 9.0729 seconds
+  --ImageSource for source F-- elapsed time : 473.5821 seconds
   Traceback (most recent call last):
     File "C:\Users\Guillaume\pyroomacousticsGIP\CustomsScripts\loop.py", line 352, in <module>
       TheatreRoom.simulate() #TRACK 1/5
       ~~~~~~~~~~~~~~~~~~~~^^
-    File "C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\pyroomacoustics\room.py", line 2645, in simulate
+    File "pyroomacoustics\room.py", line 2645, in simulate
       self.compute_rir()
       ~~~~~~~~~~~~~~~~^^
-    File "C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\pyroomacoustics\room.py", line 2303, in compute_rir
+    File "pyroomacoustics\room.py", line 2303, in compute_rir
       ir_ism = compute_ism_rir(
           src,
       ...<8 lines>...
           min_phase=self.min_phase,
       )
-    File "C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\pyroomacoustics\simulation\ism.py", line 309, in compute_ism_rir
+    File "pyroomacoustics\simulation\ism.py", line 309, in compute_ism_rir
       t_max = time.max()
-    File "C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\numpy\_core\_methods.py", line 43, in _amax
+    File "numpy\_core\_methods.py", line 43, in _amax
       return umr_maximum(a, axis, None, out, keepdims, initial, where)
   ValueError: zero-size array to reduction operation maximum which has no identity
 
 ----------------------------------------------ImageSource & RT----------------------------------------------
 
-✅SafeMat OUT [IS][RT][F 1-2]
+✅AbsMat OUT [IS][RT][F 1-2]
 - IR ✅
 LOG
   Done STL imports elapsed time : 0.0318 seconds
-  C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\pyroomacoustics\room.py:1118: UserWarning: The number of rays used for ray tracing is larger than100000 which may result in slow simulation.  The numberof rays was automatically chosen to provide accurateroom impulse response based on the room volume and thereceiver radius around the microphones.  The number ofrays may be reduced by increasing the size of thereceiver.  This tends to happen especially for largerooms with small receivers.  The receiver is a spherearound the microphone and its radius (in meters) may bespecified by providing the `receiver_radius` keywordargument to the `set_ray_tracing` method.
+  pyroomacoustics\room.py:1118: UserWarning: The number of rays used for ray tracing is larger than100000 which may result in slow simulation.  The numberof rays was automatically chosen to provide accurateroom impulse response based on the room volume and thereceiver radius around the microphones.  The number ofrays may be reduced by increasing the size of thereceiver.  This tends to happen especially for largerooms with small receivers.  The receiver is a spherearound the microphone and its radius (in meters) may bespecified by providing the `receiver_radius` keywordargument to the `set_ray_tracing` method.
     warnings.warn(
   Created Room elapsed time : 2.7295 seconds
   setup microphones elapsed time : 2.7387 seconds
@@ -136,7 +119,7 @@ LOG
    Total elapsed time : 103.0266 seconds
 -----------------------------------------
 
-❌SafeMat IN [IS][RT][F 1-2]
+❌AbsMat IN [IS][RT][F 1-2]
 - IR ❌
 LOG
   Done STL imports elapsed time : 0.0290 seconds
@@ -149,7 +132,7 @@ LOG
     File "C:\Users\Guillaume\pyroomacousticsGIP\CustomsScripts\loop.py", line 346, in <module>
       TheatreRoom.ray_tracing()
       ~~~~~~~~~~~~~~~~~~~~~~~^^
-    File "C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\pyroomacoustics\room.py", line 2258, in ray_tracing
+    File "pyroomacoustics\room.py", line 2258, in ray_tracing
       self.room_engine.ray_tracing(self.rt_args["n_rays"], src.position)
       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   TypeError: ray_tracing(): incompatible function arguments. The following argument types are supported:
@@ -164,7 +147,7 @@ LOG
 - IR ✅
 LOG
   Done STL imports elapsed time : 0.0297 seconds
-  C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\pyroomacoustics\room.py:1118: UserWarning: The number of rays used for ray tracing is larger than100000 which may result in slow simulation.  The numberof rays was automatically chosen to provide accurateroom impulse response based on the room volume and thereceiver radius around the microphones.  The number ofrays may be reduced by increasing the size of thereceiver.  This tends to happen especially for largerooms with small receivers.  The receiver is a spherearound the microphone and its radius (in meters) may bespecified by providing the `receiver_radius` keywordargument to the `set_ray_tracing` method.
+  pyroomacoustics\room.py:1118: UserWarning: The number of rays used for ray tracing is larger than100000 which may result in slow simulation.  The numberof rays was automatically chosen to provide accurateroom impulse response based on the room volume and thereceiver radius around the microphones.  The number ofrays may be reduced by increasing the size of thereceiver.  This tends to happen especially for largerooms with small receivers.  The receiver is a spherearound the microphone and its radius (in meters) may bespecified by providing the `receiver_radius` keywordargument to the `set_ray_tracing` method.
     warnings.warn(
   Created Room elapsed time : 2.8168 seconds
   setup microphones elapsed time : 2.8260 seconds
@@ -193,7 +176,7 @@ LOG
     File "C:\Users\Guillaume\pyroomacousticsGIP\CustomsScripts\loop.py", line 346, in <module>
       TheatreRoom.ray_tracing()
       ~~~~~~~~~~~~~~~~~~~~~~~^^
-    File "C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\pyroomacoustics\room.py", line 2258, in ray_tracing
+    File "pyroomacoustics\room.py", line 2258, in ray_tracing
       self.room_engine.ray_tracing(self.rt_args["n_rays"], src.position)
       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   TypeError: ray_tracing(): incompatible function arguments. The following argument types are supported:
@@ -202,11 +185,14 @@ LOG
       3. (self: pyroomacoustics.libroom.Room, arg0: typing.SupportsInt, arg1: typing.Annotated[numpy.typing.ArrayLike, numpy.float32, "[3, 1]"]) -> None
 
   Invoked with: <pyroomacoustics.libroom.Room object at 0x000000006E2EFEB0>, -110896, array([ 0. , -1. ,  1.4])
+ 
+-----------------------------------------
 ------------------------------------------------------------------------------------------
+
 
 - - - - - - - - - HIER
 
-✅SafeMat OUT [IS,RT][F 1-2]
+✅AbsMat OUT [IS,RT][F 1-2]
 - image source OK
 - RT OK
 - IRs OK
@@ -225,7 +211,7 @@ LOG
    Total elapsed time : 156.4019 seconds
 ------------------------------------------------------------------------------------------
 
-❌SafeMat IN [IS,RT][F 1-2]
+❌AbsMat IN [IS,RT][F 1-2]
 - image source OK
 - RT ERROR
 LOG
@@ -238,7 +224,7 @@ LOG
   Traceback (most recent call last):
     File "C:\Users\trogl\Documents\pyroomacousticsGIP\CustomsScripts\loop.py", line 346, in <module>
       TheatreRoom.ray_tracing()
-    File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\room.py", line 2258, in ray_tracing
+    File "\pyroomacoustics\room.py", line 2258, in ray_tracing
       self.room_engine.ray_tracing(self.rt_args["n_rays"], src.position)
   TypeError: ray_tracing(): incompatible function arguments. The following argument types are supported:
       1. (self: pyroomacoustics.libroom.Room, arg0: numpy.ndarray[numpy.float32[2, n]], arg1: numpy.ndarray[numpy.float32[3, 1]]) -> None
@@ -248,7 +234,7 @@ LOG
   Invoked with: <pyroomacoustics.libroom.Room object at 0x0000022B4A435CB0>, -110896, array([ 0. , -1. ,  1.4])
 ------------------------------------------------------------------------------------------
 
-✅SafeMat IN [IS][F 1-2]
+✅AbsMat IN [IS][F 1-2]
 - image source OK
 LOG
     Done STL imports elapsed time : 0.0499 seconds
@@ -265,7 +251,7 @@ LOG
 ------------------------------------------------------------------------------------------
 
  
-❌SafeMat IN [IS][A-G 1-16]
+❌AbsMat IN [IS][A-G 1-16]
 - image source ERROR
 LOG
     Done STL imports elapsed time : 0.0492 seconds
@@ -277,17 +263,17 @@ LOG
     Traceback (most recent call last):
       File "C:\Users\trogl\Documents\pyroomacousticsGIP\CustomsScripts\loop.py", line 352, in <module>
         TheatreRoom.simulate()
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\room.py", line 2645, in simulate
+      File "\pyroomacoustics\room.py", line 2645, in simulate
         self.compute_rir()
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\room.py", line 2303, in compute_rir
+      File "\pyroomacoustics\room.py", line 2303, in compute_rir
         ir_ism = compute_ism_rir(
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\simulation\ism.py", line 309, in compute_ism_rir
+      File "\pyroomacoustics\simulation\ism.py", line 309, in compute_ism_rir
         t_max = time.max()
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\numpy\_core\_methods.py", line 44, in _amax
+      File "\numpy\_core\_methods.py", line 44, in _amax
         return umr_maximum(a, axis, None, out, keepdims, initial, where)
     ValueError: zero-size array to reduction operation maximum which has no identity
 
-❌SafeMat IN [IS][F 1-16]
+❌AbsMat IN [IS][F 1-16]
 - image source ERROR
 LOG
     Done STL imports elapsed time : 0.0519 seconds
@@ -299,18 +285,18 @@ LOG
     Traceback (most recent call last):
       File "C:\Users\trogl\Documents\pyroomacousticsGIP\CustomsScripts\loop.py", line 352, in <module>
         TheatreRoom.simulate()
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\room.py", line 2645, in simulate
+      File "\pyroomacoustics\room.py", line 2645, in simulate
         self.compute_rir()
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\room.py", line 2303, in compute_rir
+      File "\pyroomacoustics\room.py", line 2303, in compute_rir
         ir_ism = compute_ism_rir(
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\simulation\ism.py", line 309, in compute_ism_rir
+      File "\pyroomacoustics\simulation\ism.py", line 309, in compute_ism_rir
         t_max = time.max()
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\numpy\_core\_methods.py", line 44, in _amax
+      File "\numpy\_core\_methods.py", line 44, in _amax
         return umr_maximum(a, axis, None, out, keepdims, initial, where)
     ValueError: zero-size array to reduction operation maximum which has no identity
 
 
-❌SafeMat IN [IS][F ONE BY ONE 1-16] 141000
+❌AbsMat IN [IS][F ONE BY ONE 1-16] 141000
 
 PASSED:
 - 2,3,5,6,8,9,10,11,13,15,16
@@ -326,19 +312,19 @@ LOG
     Traceback (most recent call last):
       File "C:\Users\trogl\Documents\pyroomacousticsGIP\CustomsScripts\loop.py", line 352, in <module>
         TheatreRoom.simulate()
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\room.py", line 2645, in simulate
+      File "\pyroomacoustics\room.py", line 2645, in simulate
         self.compute_rir()
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\room.py", line 2303, in compute_rir
+      File "\pyroomacoustics\room.py", line 2303, in compute_rir
         ir_ism = compute_ism_rir(
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\pyroomacoustics\simulation\ism.py", line 309, in compute_ism_rir
+      File "\pyroomacoustics\simulation\ism.py", line 309, in compute_ism_rir
         t_max = time.max()
-      File "C:\Users\trogl\AppData\Local\Programs\Python\Python39\lib\site-packages\numpy\_core\_methods.py", line 44, in _amax
+      File "\numpy\_core\_methods.py", line 44, in _amax
         return umr_maximum(a, axis, None, out, keepdims, initial, where)
     ValueError: zero-size array to reduction operation maximum which has no identity
 ------------------------------------------------------------------------------------------
 
-❌SafeMat IN [IS][F [1-16] except [1,4,7,12]]
-❌SafeMat OUT [IS][F [1-16] except [1,4,7,12]] 141000
+❌AbsMat IN [IS][F [1-16] except [1,4,7,12]]
+❌AbsMat OUT [IS][F [1-16] except [1,4,7,12]] 141000
 ValueError: zero-size array to reduction operation maximum which has no identity
 
 TODO
@@ -351,6 +337,8 @@ TODO
 
 OBSERVATIONS :
 
+  - Les normals OUT génèrent moins d'erreur
+
   - Plus il y a de micros plus le temps de calcul des images sources et long
 
   Erreur FAUX Négatif ?
@@ -360,9 +348,9 @@ OBSERVATIONS :
       File "C:\Users\Guillaume\pyroomacousticsGIP\CustomsScripts\loop.py", line 333, in <module>
         TheatreRoom.add_source(sourcePos, signal=anechoicAudioSource)
         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      File "C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\pyroomacoustics\room.py", line 2175, in add_source
+      File "pyroomacoustics\room.py", line 2175, in add_source
         return self.add(SoundSource(position, signal=signal, delay=delay))
                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      File "C:\Users\Guillaume\AppData\Local\Programs\Python\Python313\Lib\site-packages\pyroomacoustics\room.py", line 2001, in add
+      File "pyroomacoustics\room.py", line 2001, in add
         raise ValueError("The source must be added inside the room.")
       ValueError: The source must be added inside the room.
