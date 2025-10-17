@@ -4,7 +4,8 @@
 *.vim
 *.idea
 *.DS_Store
-*.wav
+# *.wav
+Generated-IRs/gitIgnored
 *.so
 build/
 docs/_build
