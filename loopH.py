@@ -161,6 +161,7 @@ fs, anechoicAudioSource = wavfile.read(
     # "CustomSamples/Basic-808-Clap.wav"
     "CustomSamples/IR-Dirac-44100-20hz-22050hz-1s.wav"
 )
+print(fs)
 
 size_reduc_factor = 1  # to get a realistic room size (not 3km)
 
@@ -168,8 +169,7 @@ size_reduc_factor = 1  # to get a realistic room size (not 3km)
 # Le code en cours est pour préparer le rendu avec plusieurs matériaux,
 # il reste à trouver les bonnes valeurs
 
-idealMat = pra.Material(energy_absorption=1.0, scattering=0.0)
-# pra.Material(energy_absorption=0.01, scattering=0.8)
+idealMat = pra.Material(energy_absorption=0.01, scattering=0.3)
 # pra.Material("reverb_chamber")
 AbsMat = pra.Material(energy_absorption=1.0, scattering=0.0)
 
@@ -196,62 +196,21 @@ meshMatMap = {
     },
 }
 
-meshPartsINMap = {
-    "TheatreP_Amphi_IN": {
-        "stlPath": "TheatreP_Amphi_IN.stl",
+JoinedMesh = {
+    "Joined-TheatreEnveloppeOUT": {
+        "stlPath": "Joined-TheatreEnveloppeOUT.stl",
         "material": idealMat,
-    },
-    "TheatreP_Decors_IN": {
-        "stlPath": "TheatreP_Decors_IN.stl",
-        "material": idealMat,
-    },
-    "TheatreP_Roof_IN": {
-        "stlPath": "TheatreP_Roof_IN.stl",
-        "material": idealMat,
-    },
-    "TheatreP_Walls_IN": {
-        "stlPath": "TheatreP_Walls_IN.stl",
-        "material": idealMat,
-    },
+    }
 }
-meshPartsOUTMap = {
-    "TheatreP_Amphi_OUT": {
-        "stlPath": "TheatreP_Amphi_OUT.stl",
-        "material": idealMat,
-    },
-    "TheatreP_Decors_OUT": {
-        "stlPath": "TheatreP_Decors_OUT.stl",
-        "material": idealMat,
-    },
-    "TheatreP_Roof_OUT": {
-        "stlPath": "TheatreP_Roof_OUT.stl",
-        "material": idealMat,
-    },
-    "TheatreP_Walls_OUT": {
-        "stlPath": "TheatreP_Walls_OUT.stl",
-        "material": idealMat,
-    },
-}
-meshLowINMap={
-    "TheatreLOW-IN": {
-        "stlPath": "TheatreLOW-IN.stl",
-        "material": idealMat,
-    },    
-}
-meshLowOUTMap={
-    "TheatreLOW-OUT": {
-        "stlPath": "TheatreLOW-OUT.stl",
-        "material": idealMat,
-    },    
-}
+
 # import des fichiers stl séparés par matériaux distincts, avec un nombre et ordre prédéfini
 allMeshesGeometry = []
-for k, v in meshLowOUTMap.items():
+for k, v in JoinedMesh.items():
 
     # import des fichiers stl
     path = v["stlPath"]
     # the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/{path}"))
-    the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/ReworkedMeshes/{path}"))
+    the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/{path}"))
     ntriang, nvec, npts = the_mesh.vectors.shape
 
     # create one wall per triangle
@@ -279,16 +238,11 @@ TheatreRoom = pra.Room(
 # max_order=2 = 1m40s
 # max_order=3 = 15m
 t.show("Created Room")
-  
-
+ 
 if useRayTracing:
     # rayon de captation des rayons (plus grand = plus rapide mais - précis)
-    TheatreRoom.set_ray_tracing(receiver_radius=0.5)  # default =0.5
-
-tast = np.asarray([0.0, -1.0, 1.4], dtype=np.float32)
-print(tast)
-print(type(tast))
-
+    TheatreRoom.set_ray_tracing(receiver_radius=2, n_rays=5000)  # default =0.5
+ 
 # sources/mic locations
 sourcesMap = {
     # "A": [-1.75, 9.15, 3.3572],
@@ -300,22 +254,22 @@ sourcesMap = {
     # "G": [3.35, -1.0, 1.4],
 }
 microphonesMap = {
-    1: [-3.8, -3.75, 1.3],
-    2: [3.8, -3.75, 1.3],
-    3: [2.4077, -7.3239, 1.3],
-    4: [-2.4077, -7.3239, 1.3],
-    5: [-5.0, -2.0, 3.5],
-    6: [5.0, -2.0, 3.5],
-    7: [3.5, -8.2, 3.5],
+    # 1: [-3.8, -3.75, 1.3],
+    # 2: [3.8, -3.75, 1.3],
+    # 3: [2.4077, -7.3239, 1.3],
+    # 4: [-2.4077, -7.3239, 1.3],
+    # 5: [-5.0, -2.0, 3.5],
+    # 6: [5.0, -2.0, 3.5],
+    # 7: [3.5, -8.2, 3.5],
     8: [-3.5, -8.2, 3.5],
-    9: [-5.1, -2.0, 5.8],
-    10: [5.1, -2.0, 5.8],
-    11: [4.0, -8.5, 5.8],
-    12: [-4.0, -8.5, 5.8],
-    13: [-5.1, -2.0, 8.2],
-    14: [5.1, -2.0, 8.2],
-    15: [4.0, -8.5, 8.2],
-    16: [-4.0, -8.5, 8.2],
+    # 9: [-5.1, -2.0, 5.8],
+    # 10: [5.1, -2.0, 5.8],
+    # 11: [4.0, -8.5, 5.8],
+    # 12: [-4.0, -8.5, 5.8],
+    # 13: [-5.1, -2.0, 8.2],
+    # 14: [5.1, -2.0, 8.2],
+    # 15: [4.0, -8.5, 8.2],
+    # 16: [-4.0, -8.5, 8.2],
 }
 
 # Making pyroom mic array from the map, to add them in the room
@@ -324,9 +278,7 @@ TheatreRoom.add_microphone_array(
     pra.MicrophoneArray(
         R=np.array(object=microphoneArray).T,
         fs=TheatreRoom.fs,
-        directivity=(
-            None if useRayTracing else pra.directivities.Omnidirectional()
-        ),
+        directivity=(None if useRayTracing else pra.directivities.Omnidirectional()),
     )
 )
 t.show("setup microphones")
@@ -335,7 +287,7 @@ t.show("setup microphones")
 #     print(m.receiver_radius)
 
 # Render folder
-folderpath = f"./15-10"
+folderpath = f"./Generated-IRs/17-10-Brouillon"
 if not os.path.exists(folderpath):
     os.makedirs(folderpath)
 
@@ -365,7 +317,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
     #     t.show(f"--RayTracing for source {sourceLabel}--")
 
     # TheatreRoom.plot_rir()
-    TheatreRoom.compute_rir()#TRACK 1/5
+    TheatreRoom.compute_rir()  # TRACK 1/5
     t.show(f"--Simulate sound with source {sourceLabel}--")
 
     # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
