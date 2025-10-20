@@ -307,8 +307,11 @@ def compute_ism_rir(
 
         # The image source which takes the most time to arrive to this
         # particular microphone
-        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        t_max = time.max() #TRACK 4/5
+        t_max = 0
+        try :
+            t_max = time.max() #TRACK 4/5
+        except ValueError :
+            print(f"Caught : {ValueError}")
 
         # Here we create an array of the right length to
         # receiver the full RIR

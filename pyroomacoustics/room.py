@@ -2255,9 +2255,6 @@ class Room(object):
         self.rt_histograms = [[] for r in range(self.mic_array.M)]
 
         for s, src in enumerate(self.sources):
-            print("aaaaaaaaaa")
-            print( self.rt_args["n_rays"])
-            print(type(src.position))
             self.room_engine.ray_tracing(self.rt_args["n_rays"], src.position)
 
             for r in range(self.mic_array.M):

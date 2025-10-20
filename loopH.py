@@ -1,45 +1,24 @@
 import json
 import os, sys
-import time
 import numpy as np
 import pyroomacoustics as pra
 import matplotlib.pyplot as plt
+from timer import Timer
 from scipy.io import wavfile
 from pathlib import Path
 
-
-class TimerError(Exception):
-    """A custom exception used to report errors in use of Timer class"""
-
-
-class Timer:
-    def __init__(self):
-        self._start_time = None
-
-    def start(self):
-        """Start a new timer"""
-        if self._start_time is not None:
-            raise TimerError(f"Timer is running. Use .stop() to stop it")
-
-        self._start_time = time.perf_counter()
-
-    def stop(self, fromText=""):
-        """Stop the timer, and report the elapsed time"""
-        if self._start_time is None:
-            raise TimerError(f"Timer is not running. Use  .start() to start it")
-
-        elapsed_time = time.perf_counter() - self._start_time
-        self._start_time = None
-        print(f"{fromText} Total elapsed time : {elapsed_time:0.4f} seconds")
-
-    def show(self, fromText=""):
-        """print time elapsed without stopping timer"""
-        if self._start_time is None:
-            raise TimerError(f"Timer is not running. Use .start() to start it")
-
-        elapsed_time = time.perf_counter() - self._start_time
-        print(f"{fromText} elapsed time : {elapsed_time:0.4f} seconds")
-
+RenderARGS = {
+    "meshPath" : "Joined-TheatreEnveloppeOUT.stl",
+    "exportPath" : "Generated-IRs/20-10",
+    "material" : pra.Material(energy_absorption=0.001, scattering=0.0),
+    "fs" : 44100,
+    "IMS_Order" : 1,
+    "useRayTracing": True,
+    "RT_receiver_radius": 2,
+    "RT_n_rays" : 5000,
+    "sourcePos": [],
+    "micPos": [],
+}
 
 def exportIRToWav(computedIRs, norm, fileName, micIndex):
 
@@ -57,7 +36,7 @@ def exportIRToWav(computedIRs, norm, fileName, micIndex):
     signal = np.array(signal, dtype=bitdepth)
 
     # create .wav file
-    wavfile.write(path, fs, signal)
+    wavfile.write(path, RenderARGS["fs"], signal)
     return signal
 
 
@@ -80,7 +59,7 @@ def makeJsonData(signal, name, wavName, sLabel, micID, sourcePos, micPos, showGr
     else:
         firstPeakIndex = 0
 
-    peakDelay = firstPeakIndex / fs
+    peakDelay = firstPeakIndex / RenderARGS["fs"]
 
     compareVolume = compareLawfulVolume(dist, volume)
 
@@ -157,49 +136,40 @@ except ImportError as err:
 
 # fs is samplerate as integer
 # audio source is numpy.ndarray
-fs, anechoicAudioSource = wavfile.read(
+anechoicAudioSource = wavfile.read(
     # "CustomSamples/Basic-808-Clap.wav"
     "CustomSamples/IR-Dirac-44100-20hz-22050hz-1s.wav"
 )
-print(fs)
 
-size_reduc_factor = 1  # to get a realistic room size (not 3km)
-
-# Le rendu en cours c'est le theatre joined en un seul STL avec (energy_absorption=1.0, scattering=0.0)
-# Le code en cours est pour préparer le rendu avec plusieurs matériaux,
-# il reste à trouver les bonnes valeurs
-
-idealMat = pra.Material(energy_absorption=0.01, scattering=0.3)
-# pra.Material("reverb_chamber")
-AbsMat = pra.Material(energy_absorption=1.0, scattering=0.0)
+ 
 
 meshMatMap = {
     # "Fabric": {
     #     "stlPath": "TheatreJoined.001.stl",
-    #     "material": idealMat,
+    #     "material": RenderARGS["material"],
     # },
     "Stone": {
         "stlPath": "TheatreJoined.002.stl",
-        "material": idealMat,
+        "material": RenderARGS["material"],
     },
     # "Dry Wall": {
     #     "stlPath": "TheatreJoined.003.stl",
-    #     "material": idealMat,
+    #     "material": RenderARGS["material"],
     # },
     "Worked Wood": {
         "stlPath": "TheatreJoined.004.stl",
-        "material": idealMat,
+        "material": RenderARGS["material"],
     },
     "Smooth Wood": {
         "stlPath": "TheatreJoined.005.stl",
-        "material": idealMat,
+        "material": RenderARGS["material"],
     },
 }
 
 JoinedMesh = {
     "Joined-TheatreEnveloppeOUT": {
-        "stlPath": "Joined-TheatreEnveloppeOUT.stl",
-        "material": idealMat,
+        "stlPath": RenderARGS["meshPath"],
+        "material": RenderARGS["material"],
     }
 }
 
@@ -212,6 +182,7 @@ for k, v in JoinedMesh.items():
     # the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/{path}"))
     the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/{path}"))
     ntriang, nvec, npts = the_mesh.vectors.shape
+    size_reduc_factor = 1  # to get a realistic room size (not 3km)
 
     # create one wall per triangle
     for w in range(ntriang):
@@ -224,25 +195,24 @@ for k, v in JoinedMesh.items():
             )
         )
 t.show("Done STL imports")
-
-useRayTracing = True
+ 
 
 TheatreRoom = pra.Room(
     walls=allMeshesGeometry,
-    fs=fs,
-    max_order=2,
-    ray_tracing=useRayTracing,
+    fs=RenderARGS["fs"],
+    max_order=RenderARGS["IMS_Order"],
+    ray_tracing= RenderARGS["useRayTracing"],
     air_absorption=True,
 )
 # max_order=1 = 10s
 # max_order=2 = 1m40s
 # max_order=3 = 15m
-t.show("Created Room")
- 
-if useRayTracing:
+t.show("Room created")
+
+if RenderARGS["useRayTracing"]:
     # rayon de captation des rayons (plus grand = plus rapide mais - précis)
-    TheatreRoom.set_ray_tracing(receiver_radius=2, n_rays=5000)  # default =0.5
- 
+    TheatreRoom.set_ray_tracing(receiver_radius=RenderARGS["RT_receiver_radius"], n_rays=RenderARGS["RT_n_rays"])  # default =0.5
+
 # sources/mic locations
 sourcesMap = {
     # "A": [-1.75, 9.15, 3.3572],
@@ -257,11 +227,11 @@ microphonesMap = {
     # 1: [-3.8, -3.75, 1.3],
     # 2: [3.8, -3.75, 1.3],
     # 3: [2.4077, -7.3239, 1.3],
-    # 4: [-2.4077, -7.3239, 1.3],
-    # 5: [-5.0, -2.0, 3.5],
-    # 6: [5.0, -2.0, 3.5],
+    4: [-2.4077, -7.3239, 1.3],
+    5: [-5.0, -2.0, 3.5],
+    6: [5.0, -2.0, 3.5],
     # 7: [3.5, -8.2, 3.5],
-    8: [-3.5, -8.2, 3.5],
+    # 8: [-3.5, -8.2, 3.5],
     # 9: [-5.1, -2.0, 5.8],
     # 10: [5.1, -2.0, 5.8],
     # 11: [4.0, -8.5, 5.8],
@@ -277,22 +247,22 @@ microphoneArray = list(microphonesMap.values())  # [[mx,my,mz],[mx,my,mz]...]
 TheatreRoom.add_microphone_array(
     pra.MicrophoneArray(
         R=np.array(object=microphoneArray).T,
-        fs=TheatreRoom.fs,
-        directivity=(None if useRayTracing else pra.directivities.Omnidirectional()),
+        fs=RenderARGS["fs"],
+        directivity=(None if RenderARGS["useRayTracing"] else pra.directivities.Omnidirectional()),
     )
 )
-t.show("setup microphones")
+t.show(">Setup microphones")
 
 # for m in TheatreRoom.mic_array:
 #     print(m.receiver_radius)
 
 # Render folder
-folderpath = f"./Generated-IRs/17-10-Brouillon"
+folderpath = RenderARGS["exportPath"]
 if not os.path.exists(folderpath):
     os.makedirs(folderpath)
 
 
-t.show("start main loop")
+t.show(">Start main loop")
 # Main Loop
 for sourceLabel, sourcePos in sourcesMap.items():
 
@@ -305,12 +275,12 @@ for sourceLabel, sourcePos in sourcesMap.items():
 
     TheatreRoom.plot()
 
-    # t.show("begin image source")
+    # t.show(">Begin image source")
     # # This function will generate all the images sources up to the order required and use them to generate the RIRs, which will be stored in the rir attribute of room.
     # TheatreRoom.image_source_model()
     # t.show(f"--ImageSource for source {sourceLabel}--")
 
-    # if useRayTracing:
+    # if RenderARGS["useRayTracing"]:
     #     TheatreRoom.ray_tracing()
     #     nRays = TheatreRoom.rt_args["n_rays"]
     #     print(f"number of rays : {nRays}")
@@ -343,7 +313,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
             )
 
             printIndex = micLoopIndex + 1
-            t.show(f"Export {wavFileName} {printIndex}/{len(computedIRs)}")
+            t.show(f">Export {wavFileName} {printIndex}/{len(computedIRs)}")
 
             # store json data
             makeJsonData(
@@ -369,5 +339,5 @@ for sourceLabel, sourcePos in sourcesMap.items():
     plt.savefig(f"{folderpath}/{sourceLabel}.png")
 
 writeJsonFile()
-t.show("Json Export")
+t.show(">Json Export")
 t.stop()
