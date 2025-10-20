@@ -14,6 +14,9 @@ import numpy as np
 from mpl_toolkits import mplot3d
 import pyroomacoustics as pra
 from scipy.io import wavfile
+from timer import Timer
+
+t = Timer()
 
 try:
     from stl import mesh
@@ -24,22 +27,35 @@ except ImportError as err:
     )
     raise err
 
-#default_stl_path = Path(__file__).parent / "../PyroomMeshes/TheatreJoined.001.stl"
-#default_stl_path = "../PyroomMeshes/cubic10m_outside.stl"
-#default_stl_path = "../PyroomMeshes/cube_both.stl"
-#default_stl_path = "../examples/data/INRIA_MUSIS.stl"
-#default_stl_path = "../PyroomMeshes/cubic10m.stl"
-#default_stl_path = "../PyroomMeshes/INRIA_MUSIC_scaled.stl"
-#default_stl_path = "../PyroomMeshes/cube_subdiv1.stl"
-#default_stl_path = "../PyroomMeshes/cube_subdiv2.stl"
-#default_stl_path = "../PyroomMeshes/cube_subdiv3.stl"
-#default_stl_path = "../PyroomMeshes/cube_subdiv4.stl"
-#default_stl_path = "../PyroomMeshes/Theatre.stl"
-#default_stl_path = "../PyroomMeshes/theatre_decimate.stl"
-#default_stl_path = "../PyroomMeshes/ReworkedMeshes/TheatreP_Walls_OUT.stl"
-default_stl_path = "../PyroomMeshes/theatre_out1.stl"
+RenderARGS = {
+    "meshPath": "PyroomMeshes/Joined-TheatreEnveloppeOUT.stl",
+    "exportPath": "Generated-IRs/20-10",
+    "material": pra.Material(energy_absorption=0.001, scattering=0.0),
+    "fs": 44100,
+    "IMS_Order": 1,
+    "useRayTracing": True,
+    "RT_receiver_radius": 2,
+    "RT_n_rays": 5000,
+    "sourcePos": [],
+    "micPos": [],
+}
 
-fs = 44100
+# default_stl_path = Path(__file__).parent / "../PyroomMeshes/TheatreJoined.001.stl"
+# default_stl_path = "../PyroomMeshes/cubic10m_outside.stl"
+# default_stl_path = "../PyroomMeshes/cube_both.stl"
+# default_stl_path = "examples/data/INRIA_MUSIS.stl"
+# default_stl_path = "../PyroomMeshes/cubic10m.stl"
+# default_stl_path = "../PyroomMeshes/INRIA_MUSIC_scaled.stl"
+# default_stl_path = "../PyroomMeshes/cube_subdiv1.stl"
+# default_stl_path = "../PyroomMeshes/cube_subdiv2.stl"
+# default_stl_path = "../PyroomMeshes/cube_subdiv3.stl"
+# default_stl_path = "../PyroomMeshes/cube_subdiv4.stl"
+# default_stl_path = "../PyroomMeshes/Theatre.stl"
+# default_stl_path = "../PyroomMeshes/theatre_decimate.stl"
+# default_stl_path = "../PyroomMeshes/ReworkedMeshes/TheatreP_Walls_OUT.stl"
+# default_stl_path = "../PyroomMeshes/theatre_out1.stl"
+# default_stl_path = "PyroomMeshes/Joined-TheatreEnveloppeOUT.stl"
+
 
 def exportIRToWav(computedIRs, norm, fileName, micIndex):
     signal = computedIRs[micIndex][0]  # [micro][source]
@@ -51,24 +67,25 @@ def exportIRToWav(computedIRs, norm, fileName, micIndex):
     bitdepth = float_types[0]
     signal = np.array(signal, dtype=bitdepth)
     # create .wav file
-    wavfile.write(fileName, fs, signal)
+    wavfile.write(fileName, RenderARGS["fs"], signal)
     return signal
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Basic room from STL file example")
     parser.add_argument(
-        "--file", type=str, default=default_stl_path, help="Path to STL file"
+        "--file", type=str, default=RenderARGS["meshPath"], help="Path to STL file"
     )
     args = parser.parse_args()
 
     # Define the materials array
-    test_mat = {
-    "description": "Example ceiling material",
-    "coeffs": [0.01, 0.02, 0.03, 0.05, 0.1, 0.2],
-    "center_freqs": [125, 250, 500, 1000, 2000, 4000],
-    }    
-    material = pra.Material(energy_absorption=0.001, scattering=0.0)
+    # test_mat = {
+    #     "description": "Example ceiling material",
+    #     "coeffs": [0.01, 0.02, 0.03, 0.05, 0.1, 0.2],
+    #     "center_freqs": [125, 250, 500, 1000, 2000, 4000],
+    # }
+    # material = pra.Material(energy_absorption=0.001, scattering=0.0)
+    material = RenderARGS["material"]
 
     # with numpy-stl
     the_mesh = mesh.Mesh.from_file(args.file)
@@ -85,40 +102,44 @@ if __name__ == "__main__":
                 material.scattering["coeffs"],
             )
         )
-        #print(the_mesh.vectors[w].T)
-    print("WALLS")
-    #for i in len(walls):
+        # print(the_mesh.vectors[w].T)
+    t.show("WALLS")
+    # for i in len(walls):
     #    print(walls[i])
 
     room = (
         pra.Room(
             walls,
-            fs=44100,
-            max_order=2,
-            ray_tracing=True,
+            fs=RenderARGS["fs"],
+            max_order=RenderARGS["IMS_Order"],
+            ray_tracing=RenderARGS["useRayTracing"],
             air_absorption=True,
         )
-        .add_source([0.0, 0, 5.0])
-        .add_microphone_array(np.c_[[0, 0, 6]])
+        .add_source([0.0, 0, 3.0])
+        .add_microphone_array(np.c_[[0, -7.0, 3.0]])
     )
-    room.set_ray_tracing(n_rays=5000, receiver_radius=2)  # default =0.5
+    room.set_ray_tracing(
+        n_rays=RenderARGS["RT_n_rays"], receiver_radius=RenderARGS["RT_receiver_radius"]
+    )  # default =0.5
+
     # compute the rir
-    print("processing image_source_model...")
+    t.show("processing image_source_model...")
     room.image_source_model()
-    print("processing ray_tracing...")
-    room.ray_tracing()
-    print("compute_rir")
+    if RenderARGS["useRayTracing"]:
+        t.show("processing ray_tracing...")
+        room.ray_tracing()
+    t.show("compute_rir")
     room.compute_rir()
     room.plot_rir()
 
-    #room.rir
+    # room.rir
     signal = exportIRToWav(
-                computedIRs=room.rir,
-                norm=False,
-                fileName="ir.wav",
-                micIndex=0,
-            )
+        computedIRs=room.rir,
+        norm=False,
+        fileName=f"{RenderARGS["exportPath"]}/ir.wav",
+        micIndex=0,
+    )
 
     # show the room
-    room.plot(img_order=1)
-    plt.show()
+    # room.plot(img_order=RenderARGS["IMS_Order"])
+    # plt.show()
