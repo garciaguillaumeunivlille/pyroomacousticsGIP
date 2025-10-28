@@ -1307,6 +1307,7 @@ class Room(object):
             # In this case, no material is provided, use totally reflective walls, no scattering
             materials = [Material(0.0, 0.0)] * n_walls
 
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ENSURE THIS IS NEVER CALLED<<<<<<<room.py L1310<<<<<<<<<<<<<<<<<<<<<")
         # Resample material properties at octave bands
         octave_bands = OctaveBandsFactory(
             fs=fs,
@@ -1408,6 +1409,8 @@ class Room(object):
                 ]
             ).T
 
+            print("in room.py extrude()")
+
             if len(self.walls[i].absorption) == 1:
                 # Single band
                 wall_materials[name] = Material(
@@ -1502,6 +1505,8 @@ class Room(object):
         wall_corners.update(new_corners)
         wall_materials.update(materials)
 
+
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ENSURE THIS IS NEVER CALLED<<<<<<<room.py L1508<<<<<<<<<<<<<<<<<<<<<")
         # If some of the materials used are multi-band, we need to resample
         # all of them to have the same number of values
         if not Material.all_flat(wall_materials):
@@ -2214,6 +2219,7 @@ class Room(object):
                 source.damping = (
                     self.room_engine.attenuations.copy()
                 )  # Octave band damping's shape (no_of_octave_bands*n_sources) damping value for each image source for each octave bands
+                print(">>>>>>value was indeed damped<<<<<<<<<<<")
                 source.generators = -np.ones(source.walls.shape)
 
                 # if randomized image method is selected, add a small random

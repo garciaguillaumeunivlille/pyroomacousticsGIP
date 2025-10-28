@@ -8,17 +8,14 @@ from scipy.io import wavfile
 from pathlib import Path
 
 RenderARGS = {
-    "meshPath" : "Joined-TheatreEnveloppeOUT.stl",
-    "exportPath" : "Generated-IRs/20-10",
-    "material" : pra.Material(energy_absorption=0.001, scattering=0.0),
-    "fs" : 44100,
-    "IMS_Order" : 1,
+    "exportPath": "Generated-IRs/MaterialsTest",
+    "fs": 44100,
+    "IMS_Order": 1,
     "useRayTracing": True,
     "RT_receiver_radius": 2,
-    "RT_n_rays" : 5000,
-    "sourcePos": [],
-    "micPos": [],
+    "RT_n_rays": 5000,
 }
+
 
 def exportIRToWav(computedIRs, norm, fileName, micIndex):
 
@@ -141,46 +138,84 @@ anechoicAudioSource = wavfile.read(
     "CustomSamples/IR-Dirac-44100-20hz-22050hz-1s.wav"
 )
 
- 
 
 meshMatMap = {
-    # "Fabric": {
-    #     "stlPath": "TheatreJoined.001.stl",
-    #     "material": RenderARGS["material"],
-    # },
-    "Stone": {
-        "stlPath": "TheatreJoined.002.stl",
-        "material": RenderARGS["material"],
+    "Theatre_Wood_Parquet": {
+        "stlFileName": "Theatre_Wood_Parquet.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.18, 0.12, 0.1, 0.09, 0.08, 0.07],
+                "center_freqs": [125, 250, 500, 1000, 2000, 4000],
+            },
+            scattering=0.0,
+        ),
     },
-    # "Dry Wall": {
-    #     "stlPath": "TheatreJoined.003.stl",
-    #     "material": RenderARGS["material"],
-    # },
-    "Worked Wood": {
-        "stlPath": "TheatreJoined.004.stl",
-        "material": RenderARGS["material"],
+    "Theatre_Wood_Walls": {
+        "stlFileName": "Theatre_Wood_Walls.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.15, 0.11, 0.10, 0.07, 0.06, 0.07],
+                "center_freqs": [125, 250, 500, 1000, 2000, 4000],
+            },
+            scattering=0.0,
+        ),
     },
-    "Smooth Wood": {
-        "stlPath": "TheatreJoined.005.stl",
-        "material": RenderARGS["material"],
+    "Theatre_Wood_Deco": {
+        "stlFileName": "Theatre_Wood_Deco.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.10, 0.07, 0.05, 0.04, 0.04, 0.04],
+                "center_freqs": [125, 250, 500, 1000, 2000, 4000],
+            },
+            scattering=0.0,
+        ),
+    },
+    "Theatre_Limestone": {
+        "stlFileName": "Theatre_Limestone.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.02, 0.02, 0.03, 0.04, 0.05, 0.05],
+                "center_freqs": [125, 250, 500, 1000, 2000, 4000],
+            },
+            scattering=0.0,
+        ),
+    },
+    "Theatre_Plaster": {
+        "stlFileName": "Theatre_Plaster.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.01, 0.02, 0.02, 0.03, 0.04, 0.05],
+                "center_freqs": [125, 250, 500, 1000, 2000, 4000],
+            },
+            scattering=0.0,
+        ),
+    },
+    "Theatre_Fibre": {
+        "stlFileName": "Theatre_Fibre.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.07, 0.07, 0.2, 0.41, 0.75, 0.97],
+                "center_freqs": [125, 250, 500, 1000, 2000, 4000],
+            },
+            scattering=0.0,
+        ),
     },
 }
 
-JoinedMesh = {
-    "Joined-TheatreEnveloppeOUT": {
-        "stlPath": RenderARGS["meshPath"],
-        "material": RenderARGS["material"],
-    }
-}
+# JoinedMesh = {
+#     "Joined-TheatreEnveloppeOUT": {
+#         "stlFileName": RenderARGS["meshPath"],
+#         "material": RenderARGS["material"],
+#     }
+# }
 
 # import des fichiers stl séparés par matériaux distincts, avec un nombre et ordre prédéfini
 allMeshesGeometry = []
-for k, v in JoinedMesh.items():
+for k, v in simpleMeshMatMap.items():
 
     # import des fichiers stl
-    path = v["stlPath"]
-    # the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/{path}"))
-    the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/{path}"))
+    stlFileName = v["stlFileName"]
+    the_mesh = mesh.Mesh.from_file(Path(f"PyroomMeshes/ReworkedMeshes/{stlFileName}"))
     ntriang, nvec, npts = the_mesh.vectors.shape
     size_reduc_factor = 1  # to get a realistic room size (not 3km)
 
@@ -195,13 +230,13 @@ for k, v in JoinedMesh.items():
             )
         )
 t.show("Done STL imports")
- 
+
 
 TheatreRoom = pra.Room(
     walls=allMeshesGeometry,
     fs=RenderARGS["fs"],
     max_order=RenderARGS["IMS_Order"],
-    ray_tracing= RenderARGS["useRayTracing"],
+    ray_tracing=RenderARGS["useRayTracing"],
     air_absorption=True,
 )
 # max_order=1 = 10s
@@ -211,7 +246,9 @@ t.show("Room created")
 
 if RenderARGS["useRayTracing"]:
     # rayon de captation des rayons (plus grand = plus rapide mais - précis)
-    TheatreRoom.set_ray_tracing(receiver_radius=RenderARGS["RT_receiver_radius"], n_rays=RenderARGS["RT_n_rays"])  # default =0.5
+    TheatreRoom.set_ray_tracing(
+        receiver_radius=RenderARGS["RT_receiver_radius"], n_rays=RenderARGS["RT_n_rays"]
+    )  # default =0.5
 
 # sources/mic locations
 sourcesMap = {
@@ -220,16 +257,16 @@ sourcesMap = {
     # "C": [3.0, 2.0, 3.3572],
     # "D": [-3.0, 2.0, 3.3572],
     # "E": [-3.35, -1.0, 1.4],
-    "F": [0.0, -1.0, 1.4],
+    # "F": [0.0, -1.0, 1.4],
     # "G": [3.35, -1.0, 1.4],
 }
 microphonesMap = {
     # 1: [-3.8, -3.75, 1.3],
     # 2: [3.8, -3.75, 1.3],
     # 3: [2.4077, -7.3239, 1.3],
-    4: [-2.4077, -7.3239, 1.3],
-    5: [-5.0, -2.0, 3.5],
-    6: [5.0, -2.0, 3.5],
+    # 4: [-2.4077, -7.3239, 1.3],
+    # 5: [-5.0, -2.0, 3.5],
+    # 6: [5.0, -2.0, 3.5],
     # 7: [3.5, -8.2, 3.5],
     # 8: [-3.5, -8.2, 3.5],
     # 9: [-5.1, -2.0, 5.8],
@@ -248,7 +285,9 @@ TheatreRoom.add_microphone_array(
     pra.MicrophoneArray(
         R=np.array(object=microphoneArray).T,
         fs=RenderARGS["fs"],
-        directivity=(None if RenderARGS["useRayTracing"] else pra.directivities.Omnidirectional()),
+        directivity=(
+            None if RenderARGS["useRayTracing"] else pra.directivities.Omnidirectional()
+        ),
     )
 )
 t.show(">Setup microphones")
@@ -268,27 +307,46 @@ for sourceLabel, sourcePos in sourcesMap.items():
 
     if TheatreRoom.sources:
         TheatreRoom.sources.clear()
-    TheatreRoom.add_source(sourcePos, signal=anechoicAudioSource)
+
+    atmptSources = 0
+    while atmptSources < 3:
+        try:
+            TheatreRoom.add_source(sourcePos, signal=anechoicAudioSource)
+            break
+        except ValueError:
+            t.show(f"failed adding source {atmptSources+1}/3 attempts")
+            atmptSources += 1
+    t.show(f"added source OK")
 
     if TheatreRoom.rir:
         TheatreRoom.rir.clear()
 
     TheatreRoom.plot()
 
-    # t.show(">Begin image source")
     # # This function will generate all the images sources up to the order required and use them to generate the RIRs, which will be stored in the rir attribute of room.
+    # t.show(f"--Start IMS for {sourceLabel}--")
     # TheatreRoom.image_source_model()
-    # t.show(f"--ImageSource for source {sourceLabel}--")
+    # t.show(f"--Done IMS for {sourceLabel}--")
 
     # if RenderARGS["useRayTracing"]:
+    #     t.show(f"--Start RayTracing for source {sourceLabel}--")
     #     TheatreRoom.ray_tracing()
-    #     nRays = TheatreRoom.rt_args["n_rays"]
-    #     print(f"number of rays : {nRays}")
-    #     t.show(f"--RayTracing for source {sourceLabel}--")
+    #     t.show(f"--Done RayTracing for source {sourceLabel}--")
 
     # TheatreRoom.plot_rir()
-    TheatreRoom.compute_rir()  # TRACK 1/5
-    t.show(f"--Simulate sound with source {sourceLabel}--")
+
+    t.show(f"-- compute_rir for source {sourceLabel}")
+    atmptRIR = 0
+    while atmptRIR < 3:
+        try:
+            TheatreRoom.compute_rir()  # TRACK 1/5
+        # except ValueError:
+        #     t.show(f"compute_rir failed with ValueError")
+        #     atmptRIR += 1
+        except RuntimeError:
+            t.show(f"compute_rir failed with RuntimeError")
+            atmptRIR += 1
+    t.show(f"-- compute_rir OK")
 
     # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
     computedIRs = TheatreRoom.rir
@@ -334,6 +392,9 @@ for sourceLabel, sourcePos in sourcesMap.items():
             # plt.xlabel("Time [s]")
             micLoopIndex += 1
     else:
+        t.show(
+            f"There is {len(computedIRs)} computed IRs for {len(microphoneArray)} microphones"
+        )
         raise Exception(f"IR data is missing some Microphones indexes")
 
     plt.savefig(f"{folderpath}/{sourceLabel}.png")

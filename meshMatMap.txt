@@ -1,0 +1,80 @@
+meshMatMap = {
+    "Theatre_Wood_Parquet": {
+        "stlFileName": "Theatre_Wood_Parquet.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.18, 0.12, 0.1, 0.09, 0.08, 0.07, 0.07, 0.07],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+            scattering={
+                "coeffs": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+        ),
+    },
+    "Theatre_Wood_Walls": {
+        "stlFileName": "Theatre_Wood_Walls.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.15, 0.11, 0.10, 0.07, 0.06, 0.07, 0.07, 0.07],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+            scattering={
+                "coeffs": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+        ),
+    },
+    "Theatre_Wood_Deco": {
+        "stlFileName": "Theatre_Wood_Deco.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.10, 0.07, 0.05, 0.04, 0.04, 0.04, 0.04, 0.04],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+            scattering={
+                "coeffs": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+        ),
+    },
+    "Theatre_Limestone": {
+        "stlFileName": "Theatre_Limestone.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.02, 0.02, 0.03, 0.04, 0.05, 0.05, 0.05, 0.05],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+            scattering={
+                "coeffs": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+        ),
+    },
+    "Theatre_Plaster": {
+        "stlFileName": "Theatre_Plaster.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.01, 0.02, 0.02, 0.03, 0.04, 0.05, 0.05, 0.05],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+            scattering={
+                "coeffs": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+        ),
+    },
+    "Theatre_Fibre": {
+        "stlFileName": "Theatre_Fibre.stl",
+        "material": pra.Material(
+            energy_absorption={
+                "coeffs": [0.07, 0.07, 0.2, 0.41, 0.75, 0.97, 0.97, 0.97],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+            scattering={
+                "coeffs": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+            },
+        ),
+    },
+}

@@ -62,6 +62,8 @@ def apply_air_aborption(
     air_abs_coeffs,
     distance,
 ):
+    # print(air_abs_coeffs)
+    # croppedAirAbs = air_abs_coeffs[:-1]
     air_abs_factor = np.exp(-0.5 * air_abs_coeffs[:, None] * distance)
     return oct_band_amplitude * air_abs_factor
 
@@ -183,7 +185,8 @@ def compute_ism_rir(
 
     # dist shape (n) : n0 of image sources
     time = dist / c  # Calculate time of arrival for each image source
-    #TRACK 6
+    # print(f">>1 : time:{time} | dist: {dist} | c:{c}")
+    # TRACK 6
 
     oct_band_amplitude = att / dist
     full_band_imp_resp = []
@@ -304,14 +307,19 @@ def compute_ism_rir(
         # so that the delay should not be applied to the times directly
         delay = fdl2 / fs
         time += delay
+        # print(f">>2 : time:{time} | delay: {delay}")
 
         # The image source which takes the most time to arrive to this
         # particular microphone
-        t_max = 0
-        try :
-            t_max = time.max() #TRACK 4/5
-        except ValueError :
-            print(f"Caught : {ValueError}")
+
+        # t_max = 0.123 #[0.01395197, 0.05935317, 0.03051056, 0.06228533]
+        # try:
+        t_max = time.max()  # TRACK 4/5
+        print(time)
+        # except ValueError:
+        #     print(f">>>>>>>>>>>>>Caught : {str(ValueError)}")
+        #     print(f">>>>>>>>>>>>>t_max will keep default value {t_max} flagged for removal")
+        #     pass #t_max keeps default value
 
         # Here we create an array of the right length to
         # receiver the full RIR

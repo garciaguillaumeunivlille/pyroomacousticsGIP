@@ -325,10 +325,14 @@ class Material(object):
         if isinstance(energy_absorption, (float, np.float32, np.float64)):
             # This material is flat over frequencies
             energy_absorption = {"coeffs": [energy_absorption]}
+            print(
+                f"-----| MatDebug : This material's ABS is flat over frequencies energy_absorption = {energy_absorption}"
+            )
 
         elif isinstance(energy_absorption, str):
             # Get the coefficients from the database
             energy_absorption = dict(materials_absorption_table[energy_absorption])
+            print(f"-----| MatDebug : Get ABS coefficients from the database")
 
         elif not isinstance(energy_absorption, dict):
             raise TypeError(
@@ -340,21 +344,46 @@ class Material(object):
         if scattering is None:
             # By default there is no scattering
             scattering = 0.0
+            print(
+                f"-----| MatDebug : Scattering input was 'None', set to default value {scattering}"
+            )
 
         if isinstance(scattering, (float, np.float32, np.float64)):
             # This material is flat over frequencies
             # We match the number of coefficients for the absorption
+
+            print(f"-----| MatDebug : This material's SCATT is flat over frequencies")
+
             if len(energy_absorption["coeffs"]) > 1:
+                print(
+                    f"----| MatDebug : ABS's coeff > 1 , Absorption multibandes detected"
+                )
+
+                print(f"---| MatDebug : Scattering was {scattering}")
                 scattering = {
                     "coeffs": [scattering] * len(energy_absorption["coeffs"]),
                     "center_freqs": energy_absorption["center_freqs"],
                 }
+                print(f"---| MatDebug : Scattering now set to {scattering}")
+                print(
+                    f"---| MatDebug : Scattering values (coeffs) were set to match ABS's coeff"
+                )
+                print(
+                    f"---| MatDebug : Scattering bands (center_freqs) were set to match ABS's center_freqs"
+                )
+
             else:
+                print(f"----| MatDebug : ABS's coeff is not > 1 ")
+                print(f"---| MatDebug : Scattering was {scattering}")
                 scattering = {"coeffs": [scattering]}
+                print(f"---| MatDebug : Scattering now set to {scattering}")
 
         elif isinstance(scattering, str):
             # Get the coefficients from the database
             scattering = dict(materials_scattering_table[scattering])
+            print(
+                f"-----| MatDebug : Get SCATT coefficients from the database scatt = {scattering}"
+            )
 
         elif not isinstance(scattering, dict):
             # In all other cases, the material should be a dictionary
@@ -366,9 +395,18 @@ class Material(object):
 
         # Now handle the case where energy absorption is flat, but scattering is not
         if len(scattering["coeffs"]) > 1 and len(energy_absorption["coeffs"]) == 1:
+            print(
+                f"----| MatDebug : handling the case where energy absorption is flat, but scattering is not"
+            )
             n_coeffs = len(scattering["coeffs"])
             energy_absorption["coeffs"] = energy_absorption["coeffs"] * n_coeffs
             energy_absorption["center_freqs"] = list(scattering["center_freqs"])
+            print(
+                f"----| MatDebug : energy_absorption's coeffs were set to match scattering's coeff"
+            )
+            print(
+                f"----| MatDebug : energy_absorption's center_freqs were set to match scattering's center_freqs"
+            )
 
         # checks for `energy_absorption` dict
         assert isinstance(energy_absorption, dict), (
@@ -403,7 +441,9 @@ class Material(object):
             )
 
         self.energy_absorption = energy_absorption
+        print(f"-----| MatDebug : energy_absorption = {energy_absorption}")
         self.scattering = scattering
+        print(f"-----| MatDebug : scattering = {scattering}")
 
     def is_freq_flat(self):
         """
