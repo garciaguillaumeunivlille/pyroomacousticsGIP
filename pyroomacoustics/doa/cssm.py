@@ -103,7 +103,7 @@ class CSSM(MUSIC):
                 invalid.append(k)
             else:
                 beta.append(idx)
-
+        print("*****************Here we remove the bands that had too few peaks***********ccsm.py*********")
         # Here we remove the bands that had too few peaks
         self.freq_bins = np.delete(self.freq_bins, invalid)
         self.num_freq = self.num_freq - len(invalid)

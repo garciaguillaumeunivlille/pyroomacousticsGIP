@@ -22,7 +22,7 @@ except ImportError as err:
     raise err
 
 RenderARGS = {
-    "exportPath": "Generated-IRs/gitIgnored/SimpleTest/27-10",
+    "exportPath": "Generated-IRs/gitIgnored/SimpleTest/Test INRIA/122 31-10",
     "fs": 44100,
     "IMS_Order": 1,
     "useRayTracing": True,
@@ -30,6 +30,7 @@ RenderARGS = {
     "RT_n_rays": 5000,
 }
 
+name ="Parquet-INRIA-RT-122"
 
 def exportIRToWav(computedIRs, norm, fileName, micIndex):
     signal = computedIRs[micIndex][0]  # [micro][source]
@@ -37,34 +38,33 @@ def exportIRToWav(computedIRs, norm, fileName, micIndex):
         from utilities import normalize
 
         signal = normalize(signal, bits=np.int8)
-
-    float_types = [float, float, np.float32, np.float64]
-    bitdepth = float_types[0]
-    signal = np.array(signal, dtype=bitdepth)
+ 
+    signal = np.array(signal, dtype=float)
     # create .wav file
     wavfile.write(fileName, RenderARGS["fs"], signal)
     return signal
 
 
-name = "8Bands-inria-parquet"
- 
-
- 
-
-# material = pra.Material(       
+# material = pra.Material(
 #     energy_absorption={
 #         "coeffs": [0.01],
 #         "center_freqs": [62.5]
 #         },
 #     scattering=0.0
-# )   
+# )
 
-  
-material = pra.Material(0.1,0.0)
 
+CasAMat = pra.Material(
+    energy_absorption={
+        "coeffs": [0.18, 0.12, 0.1, 0.09, 0.08, 0.07, 0.07, 0.07],
+        "center_freqs": [62.5, 125, 250, 500, 1000, 2000, 4000, 8000],
+    },
+    scattering=0.0,
+)
+material = CasAMat
 
 # with numpy-stl
-the_mesh = mesh.Mesh.from_file("examples/data/INRIA_MUSIS.stl") 
+the_mesh = mesh.Mesh.from_file("examples/data/INRIA_MUSIS.stl")
 ntriang, nvec, npts = the_mesh.vectors.shape
 size_reduc_factor = 500  # to get a realistic room size (not 3km)
 # size_reduc_factor = 1  # to get a realistic room size (not 3km)
@@ -100,12 +100,22 @@ room = pra.Room(
         [-4.0000, 10.0000, 3.0000],
     ]
 )
-  
+if RenderARGS["useRayTracing"]:
+    room.set_ray_tracing(
+        n_rays=RenderARGS["RT_n_rays"], receiver_radius=RenderARGS["RT_receiver_radius"]
+    )
+
+
+anechoicAudioSource = wavfile.read(
+    # "CustomSamples/Basic-808-Clap.wav"
+    "CustomSamples/IR-Dirac-44100-20hz-22050hz-1s.wav"
+)
+
 # attempting to add source in room externally to catch a common unresolved persistent error
 atmptSources = 0
 while atmptSources < 3:
     try:
-        room.add_source([-1,1,1])
+        room.add_source([-1, 1, 1])
         break
     except ValueError:
         atmptSources += 1
@@ -124,11 +134,11 @@ room.plot_rir()
 # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
 computedIRs = room.rir
 if len(computedIRs) == len(room.mic_array):
-    # needed since we iterate from a map/dict with arbitrary int IDs
+    # needed since we   from a map/dict with arbitrary int IDs
     for i in range(0, len(room.mic_array)):
 
-        folderpath = f"{RenderARGS["exportPath"]}"#/{j}
-        #{j}_
+        folderpath = f"{RenderARGS["exportPath"]}"  # /{j}
+        # {j}_
         wavFileName = f"{name}-{i+1}.wav"
         fileName = f"{folderpath}/{wavFileName}"
 
@@ -146,10 +156,10 @@ if len(computedIRs) == len(room.mic_array):
 
 else:
     t.show(
-            f"There is {len(computedIRs)} computed IRs for {len(room.mic_array)} microphones"
-        )
+        f"There is {len(computedIRs)} computed IRs for {len(room.mic_array)} microphones"
+    )
     raise Exception(f"IR data is missing some Microphones indexes")
 
 # show the room
-# room.plot(img_order=1)
-# plt.show()
+room.plot(img_order=1)
+plt.show()

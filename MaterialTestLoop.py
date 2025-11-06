@@ -282,8 +282,7 @@ for kMatName, vCoeff in matMap.items():
     computedIRs = room.rir
 
     if len(computedIRs) == len(room.mic_array):
-        # needed since we iterate from a map/dict with arbitrary int IDs
-        for i in range(0, len(room.mic_array)):
+         for i in range(0, len(room.mic_array)):
 
             wavFileName = f"D{i+1}-{kMatName}.wav"
 

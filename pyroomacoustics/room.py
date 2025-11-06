@@ -1307,7 +1307,7 @@ class Room(object):
             # In this case, no material is provided, use totally reflective walls, no scattering
             materials = [Material(0.0, 0.0)] * n_walls
 
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ENSURE THIS IS NEVER CALLED<<<<<<<room.py L1310<<<<<<<<<<<<<<<<<<<<<")
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ENSURE THIS IS NEVER CALLED<<<<<<<from_corners method in room.py<<<<<<<<<<<<<<<<<<<<<")
         # Resample material properties at octave bands
         octave_bands = OctaveBandsFactory(
             fs=fs,
@@ -1409,7 +1409,7 @@ class Room(object):
                 ]
             ).T
 
-            print("in room.py extrude()")
+            print(">>>>>>>>>>>in room.py extrude()")
 
             if len(self.walls[i].absorption) == 1:
                 # Single band
@@ -1506,7 +1506,7 @@ class Room(object):
         wall_materials.update(materials)
 
 
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ENSURE THIS IS NEVER CALLED<<<<<<<room.py L1508<<<<<<<<<<<<<<<<<<<<<")
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ENSURE THIS IS NEVER CALLED<<<<<<<extrude Method room.py<<<<<<<<<<<<<<<<<<<<<")
         # If some of the materials used are multi-band, we need to resample
         # all of them to have the same number of values
         if not Material.all_flat(wall_materials):
@@ -2920,6 +2920,8 @@ class Room(object):
         formula: str
             The formula to use for the calculation, 'sabine' (default) or 'eyring'
         """
+
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ENSURE THIS IS NEVER CALLED<<<<<<<rt60_theory method in room.py<<<<<<<<<<<<<<<<<<<<<")
 
         rt60 = 0.0
 

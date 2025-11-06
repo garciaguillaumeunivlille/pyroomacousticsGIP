@@ -53,7 +53,8 @@ def multi_convolve(*signals):
 
     conv = np.fft.irfft(fd, axis=-1, n=pow2_len)
     conv = conv[:, :max_len]
-
+    print("*-*-*-*-*-*-*-*-  IN multi_convolve *-*-*-*-*-*-*-*- ")
+    print(f"return conv : {conv}")
     return conv
 
 
@@ -65,7 +66,10 @@ def apply_air_aborption(
     # print(air_abs_coeffs)
     # croppedAirAbs = air_abs_coeffs[:-1]
     air_abs_factor = np.exp(-0.5 * air_abs_coeffs[:, None] * distance)
-    return oct_band_amplitude * air_abs_factor
+    ret = oct_band_amplitude * air_abs_factor
+    print("*-*-*-*-*-*-*-*-  IN apply_air_aborption *-*-*-*-*-*-*-*- ")
+    print(f"return : oct_band_amplitude * air_abs_factor = {ret}")
+    return ret
 
 
 def interpolate_octave_bands(
@@ -107,7 +111,8 @@ def interpolate_octave_bands(
         att_in_dft_scale = np.abs(att_in_dft_scale) * np.exp(1j * m_p)
 
     ir = np.fft.ifft(att_in_dft_scale, n=octave_bands.n_fft, axis=-1).real
-
+    print("*-*-*-*-*-*-*-*-  IN interpolate_octave_bands *-*-*-*-*-*-*-*- ")
+    print(f"return ir : {ir}")
     return ir
 
 
@@ -159,6 +164,9 @@ def source_angle_shoebox(image_source_loc, wall_flips, mic_loc):
     else:
         colatitude = np.pi / 2 - np.arcsin(p_dash_array[2] / d_array)
 
+    print("*-*-*-*-*-*-*-*-  IN source_angle_shoebox *-*-*-*-*-*-*-*- ")
+    print(f"return azimuth={azimuth}")
+    print(f"return colatitude={colatitude}")
     return azimuth, colatitude
 
 
@@ -192,11 +200,13 @@ def compute_ism_rir(
     full_band_imp_resp = []
 
     if air_abs_coeffs is not None:
+        print("--|Included air_abs_coeffs")
         oct_band_amplitude = apply_air_aborption(
             oct_band_amplitude, air_abs_coeffs, dist
         )
 
     if mic_dir is not None:
+        print("--|Included mic_dir")
         angle_function_array = angle_function(images, mic)
         azimuth_m = angle_function_array[0]
         colatitude_m = angle_function_array[1]
@@ -207,11 +217,14 @@ def compute_ism_rir(
         )
 
         if mic_dir.is_impulse_response:
+            print("---|Included mic_dir.is_impulse_response")
             full_band_imp_resp.append(mic_gain)
         else:
+            print("---|Included mic_gain")
             oct_band_amplitude *= mic_gain
 
     if src.directivity is not None:
+        print("--|Included src.directivity")
         azimuth_s, colatitude_s = source_angle_shoebox(
             image_source_loc=images,
             wall_flips=abs(src.orders_xyz[:, is_visible]),
@@ -224,8 +237,10 @@ def compute_ism_rir(
         )
 
         if src.directivity.is_impulse_response:
+            print("---|Included append src_gain to full_band_imp_resp")
             full_band_imp_resp.append(src_gain)
         else:
+            print("---|Included multiplie oct_band_amplitude by src_gain")
             oct_band_amplitude *= src_gain
 
     # there should be 3 possibile shapes for the gains
@@ -255,6 +270,7 @@ def compute_ism_rir(
     n_bands = oct_band_amplitude.shape[0]
 
     if len(full_band_imp_resp) > 0:
+        print("--| Case 3) Full band RIR construction")
         # Case 3) Full band RIR construction
         sample_frac = time * fs
         time_ip = np.floor(sample_frac).astype(np.int32)
@@ -271,11 +287,14 @@ def compute_ism_rir(
         full_band_imp_resp.append(frac_delays)
 
         # convolve all the impulse responses
+        print("--|convolve all the impulse responses")
         if n_bands == 1:
+            print("---| n_bands EQUALS 1")
             irs = multi_convolve(*full_band_imp_resp)
             irs *= oct_band_amplitude.T
 
         else:
+            print("---| n_bands NOT EQUALS 1")
             ir_att = interpolate_octave_bands(
                 octave_bands, oct_band_amplitude, min_phase=min_phase
             )
@@ -290,12 +309,14 @@ def compute_ism_rir(
         )
 
         if n_bands > 1 and not min_phase:
+            print("---| n_bands > 1 and not min_phase")
             # we want to trim the extra samples introduced by the octave
             # band filters
             s = (constants.get("octave_bands_n_fft")) // 2
             rir = rir[s:]
 
     else:
+        print("--| Case 1) or 2 Single- or Octave-bands RIR construction")
         # Case 1) or 2)
         # Single- or Octave-bands RIR construction
 
@@ -314,8 +335,9 @@ def compute_ism_rir(
 
         # t_max = 0.123 #[0.01395197, 0.05935317, 0.03051056, 0.06228533]
         # try:
+  
         t_max = time.max()  # TRACK 4/5
-        print(time)
+        print(f"time : {time}")
         # except ValueError:
         #     print(f">>>>>>>>>>>>>Caught : {str(ValueError)}")
         #     print(f">>>>>>>>>>>>>t_max will keep default value {t_max} flagged for removal")
@@ -343,8 +365,11 @@ def compute_ism_rir(
             )
 
             if n_bands > 1:
+                print("---| n_bands > 1")
                 rir += octave_bands.analysis(ir_loc, band=b)
             else:
+                print("---| n_bands NOT > 1")
                 rir += ir_loc
-
+    print("*-*-*-*-*-*-*-*-  IN compute_ism_rir *-*-*-*-*-*-*-*- ")
+    print(f"return rir : {rir}")
     return rir

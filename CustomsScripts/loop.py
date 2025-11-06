@@ -371,8 +371,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
 
     # mic loop through each computedIR : [[micro][source]]
     if len(computedIRs) == len(microphoneArray):
-        # needed since we iterate from a map/dict with arbitrary int IDs
-        micLoopIndex = 0
+         micLoopIndex = 0
         for micID, micPos in microphonesMap.items():
 
             fileName = f"{sourceLabel}{micID}"

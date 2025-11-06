@@ -1202,6 +1202,9 @@ def compute_b(
     a_ri:
         a 2D numpy array. each column corresponds to the measurements within a subband
     """
+
+    print("************************************proc***computeB***************************")
+
     b_lst = []
     a_Gb_lst = []
     if use_lu:

@@ -152,6 +152,8 @@ class FRIDA(DOA):
         # loop over all subbands
         self.num_freq = self.freq_bins.shape[0]
 
+        print("************************************proc*****FRIDA*************************")
+
         if self.dim == 2:
             # build the G matrix if necessary
             if self.G is None:

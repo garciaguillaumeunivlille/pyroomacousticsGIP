@@ -3,11 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits import mplot3d
 import pyroomacoustics as pra
-from timer import Timer
-
-# Timer to log elapsed time
-t = Timer()
-t.start()
 
 
 try:
@@ -31,6 +26,7 @@ RenderARGS = {
 
 
 material = pra.Material(energy_absorption=0.1, scattering=0.0)
+
 # with numpy-stl
 the_mesh = mesh.Mesh.from_file("data/INRIA_MUSIS.stl")
 ntriang, nvec, npts = the_mesh.vectors.shape
@@ -89,13 +85,9 @@ while atmptSources < 3:
         break
     except ValueError:
         atmptSources += 1
-        t.show(f">>>failed adding source {atmptSources}/3 attempts")
-t.show(f"added source OK")
 
 
 # compute the rir
-room.image_source_model()
-room.ray_tracing()
 room.compute_rir()
 room.plot_rir()
 # show the room

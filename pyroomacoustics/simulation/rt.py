@@ -33,6 +33,8 @@ from scipy.interpolate import interp1d
 
 
 def sequence_generation(volume, duration, c, fs, max_rate=10000):
+    print("*-*-*-*-*-*-*-*-  IN sequence_generation *-*-*-*-*-*-*-*- ")
+
     # repeated constant
     fpcv = 4 * np.pi * c**3 / volume
 
@@ -60,6 +62,7 @@ def sequence_generation(volume, duration, c, fs, max_rate=10000):
 
 
 def interp_hist(hist, N):
+    print("*-*-*-*-*-*-*-*-  IN interp_hist *-*-*-*-*-*-*-*- ")
     """
     interpolate the histogram on N samples
 
@@ -79,6 +82,7 @@ def interp_hist(hist, N):
 
 
 def seq_bin_power(seq, hbss):
+    print("*-*-*-*-*-*-*-*-  IN seq_bin_power *-*-*-*-*-*-*-*- ")
     seq_rot = seq.reshape((-1, hbss))  # shape 72,64
     power = np.sum(seq_rot**2, axis=1)
     power[power <= 0.0] = 1.0
@@ -96,16 +100,22 @@ def compute_rt_rir(
     octave_bands,
     air_abs_coeffs=None,
 ):
+    print("*-*-*-*-*-*-*-*-  IN compute_rt_rir *-*-*-*-*-*-*-*- ")
     # get the maximum length from the histograms
     # Sum vertically across octave band for each value in
     # histogram (7,2500) -> (2500) -> np .nonzero(
     nz_bins_loc = np.nonzero(histograms[0].sum(axis=0))[0]
 
     if len(nz_bins_loc) == 0:
+        print("--|len(nz_bins_loc) EQUAL 0")
+        print(
+            "--|the histogram is all zeros, there is no RIR to build we return only an RIR that contains the default delay"
+        )
         # the histogram is all zeros, there is no RIR to build
         # we return only an RIR that contains the default delay
         return np.zeros(fdl // 2)
     else:
+        print("--|len(nz_bins_loc) NOT EQUAL 0")
         n_bins = nz_bins_loc[-1] + 1
 
     t_max = n_bins * hist_bin_size
@@ -132,8 +142,10 @@ def compute_rt_rir(
     rir_bands = np.zeros((n_bands, N))
     for b, bw in enumerate(bws):  # Loop through every band
         if n_bands > 1:
+            print("---|n_bands > 1")
             seq_bp = octave_bands.analysis(seq, band=b)
         else:
+            print("---|n_bands NOT > 1")
             seq_bp = seq.copy()
 
         # Take only those bins which have some non-zero values for that specific octave bands.
@@ -150,11 +162,17 @@ def compute_rt_rir(
         # this is the contribution of the octave band to total energy
         seq_bp *= np.sqrt(bw / fs * 2.0 * hist_lin_interp)
 
+        print(
+            "************************************proc*****RT*************************"
+        )
+
         # Impulse response for every octave band for each microphone
         rir_bands[b] = seq_bp
 
     if air_abs_coeffs is not None:
+        print("--|air_abs_coeffs is not None")
         if rir_bands.shape[0] == 1:
+            print("---|rir_bands.shape[0] == 1")
             # do the octave band analysis if it was not done in the first step
             rir_bands = np.array(
                 [

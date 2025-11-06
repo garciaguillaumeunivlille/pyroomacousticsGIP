@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +11,7 @@ from timer import Timer
 t = Timer()
 t.start()
 
+
 try:
     from stl import mesh
 except ImportError as err:
@@ -21,7 +23,7 @@ except ImportError as err:
 
 # IR computing parameters, except [Material, Mesh, Source-Micros locations]
 RenderARGS = {
-    "exportPath": "Generated-IRs/gitIgnored/03-11",
+    "exportPath": "Generated-IRs/gitIgnored/03-11/FullSetx3",
     "fs": 44100,
     "IMS_Order": 1,
     "useRayTracing": True,
@@ -29,11 +31,10 @@ RenderARGS = {
     "RT_n_rays": 5000,
 }
 
-name = "Set"
 
-
-def exportIRToWav(computedIRs, norm, fileName, micIndex):
-    signal = computedIRs[micIndex][0]  # [micro][source]
+def exportIRToWav(computedIRs, norm, fileName):
+    # 0,0 car on fait couple par couple pour ce fichier
+    signal = computedIRs[0][0]  # [micro][source]
     if norm:
         from utilities import normalize
 
@@ -129,35 +130,34 @@ meshMatMap = {
     },
 }
 
-# sources/mic locations ( TODO : Remplacer la boucle inrange par in map.items pour le script final)
-# sourcesMap = {
-#     "A": [-1.75, 9.15, 3.3572],
-#     "B": [1.75, 9.15, 3.3572],
-#     "C": [3.0, 2.0, 3.3572],
-#     "D": [-3.0, 2.0, 3.3572],
-#     "E": [-3.35, -1.0, 1.4],
-#     "F": [0.0, -1.0, 1.4],
-#     "G": [3.35, -1.0, 1.4],
-# }
+sourcesMap = {
+    "A": [-1.75, 9.15, 3.3572],
+    "B": [1.75, 9.15, 3.3572],
+    "C": [3.0, 2.0, 3.3572],
+    "D": [-3.0, 2.0, 3.3572],
+    "E": [-3.35, -1.0, 1.4],
+    "F": [0.0, -1.0, 1.4],
+    "G": [3.35, -1.0, 1.4],
+}
 
-# microphonesMap = {
-#     1: [-3.8, -3.75, 1.3],
-#     2: [3.8, -3.75, 1.3],
-#     3: [2.4077, -7.3239, 1.3],
-#     4: [-2.4077, -7.3239, 1.3],
-#     5: [-5.0, -2.0, 3.5],
-#     6: [5.0, -2.0, 3.5],
-#     7: [3.5, -8.2, 3.5],
-#     8: [-3.5, -8.2, 3.5],
-#     9: [-5.1, -2.0, 5.8],
-#     10: [5.1, -2.0, 5.8],
-#     11: [4.0, -8.5, 5.8],
-#     12: [-4.0, -8.5, 5.8],
-#     13: [-5.1, -2.0, 8.2],
-#     14: [5.1, -2.0, 8.2],
-#     15: [4.0, -8.5, 8.2],
-#     16: [-4.0, -8.5, 8.2],
-# }
+microphonesMap = {
+    1: [-3.8, -3.75, 1.3],
+    2: [3.8, -3.75, 1.3],
+    3: [2.4077, -7.3239, 1.3],
+    4: [-2.4077, -7.3239, 1.3],
+    5: [-5.0, -2.0, 3.5],
+    6: [5.0, -2.0, 3.5],
+    7: [3.5, -8.2, 3.5],
+    8: [-3.5, -8.2, 3.5],
+    9: [-5.1, -2.0, 5.8],
+    10: [5.1, -2.0, 5.8],
+    11: [4.0, -8.5, 5.8],
+    12: [-4.0, -8.5, 5.8],
+    13: [-5.1, -2.0, 8.2],
+    14: [5.1, -2.0, 8.2],
+    15: [4.0, -8.5, 8.2],
+    16: [-4.0, -8.5, 8.2],
+}
 
 # Build room from geometry
 walls = []
@@ -181,111 +181,89 @@ for k, v in meshMatMap.items():
         )
 t.show("Done STL imports")
 
-# Instanciating room with geometry and some render parameters
-room = pra.Room(
-    walls,
-    fs=RenderARGS["fs"],
-    max_order=RenderARGS["IMS_Order"],
-    ray_tracing=RenderARGS["useRayTracing"],
-    air_absorption=True,
-).add_microphone_array(
-    np.c_[
-        [-3.8, -3.75, 1.3],
-        # [3.8, -3.75, 1.3],
-        # [2.4077, -7.3239, 1.3],
-        # [-2.4077, -7.3239, 1.3],
-        # [-5.0, -2.0, 3.5],
-        # [5.0, -2.0, 3.5],
-        # [3.5, -8.2, 3.5],
-        # [-3.5, -8.2, 3.5],
-        # [-5.1, -2.0, 5.8],# <-- D4
-        # [5.1, -2.0, 5.8],
-        # [4.0, -8.5, 5.8],
-        # [-4.0, -8.5, 5.8],
-        # [-5.1, -2.0, 8.2],
-        # [5.1, -2.0, 8.2],
-        # [4.0, -8.5, 8.2],
-        # [-4.0, -8.5, 8.2],
-    ],
-)
+
+for times in range(0, 2):
+    for sourceLabel, sourcePos in sourcesMap.items():
+        micIndex = 0
+        for micID, micPos in microphonesMap.items():
+
+            # Instanciating room with geometry and some render parameters
+            room = pra.Room(
+                walls,
+                fs=RenderARGS["fs"],
+                max_order=RenderARGS["IMS_Order"],
+                ray_tracing=RenderARGS["useRayTracing"],
+                air_absorption=True,
+            ).add_microphone_array(
+                np.c_[micPos],
+            )
+
+            # attempting to add source in room externally to catch a common unresolved persistent error
+            addSrcAttempts = 0
+            while addSrcAttempts < 3:
+                try:
+                    room.add_source(sourcePos)
+                    break
+                except ValueError:
+                    addSrcAttempts += 1
+                    t.show(f">>>failed adding source {addSrcAttempts}/3 attempts")
+            t.show(f"added source OK")
+
+            if RenderARGS["useRayTracing"]:
+                room.set_ray_tracing(
+                    n_rays=RenderARGS["RT_n_rays"],
+                    receiver_radius=RenderARGS["RT_receiver_radius"],
+                )  # default =0.5
+
+            simulationAttempts = 0
+            while simulationAttempts < 5:
+                try:
+                    # compute the rir
+                    t.show("processing image_source_model...")
+                    room.image_source_model()
+                    if RenderARGS["useRayTracing"]:
+                        t.show("processing ray_tracing...")
+                        room.ray_tracing()
+                    t.show("compute_rir")
+                    room.compute_rir()
+                    t.show("plot_rir")
+                    room.plot_rir()
+                    break
+                except (ValueError, RuntimeError) as e:
+                    t.show(f"compute_rir failed with {str(e)}")
+                    simulationAttempts += 1
+                    t.show(f">>>simulation failed {simulationAttempts}/5 attempts")
+            t.show(f"simulation OK")
+
+            # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
+            computedIRs = room.rir
+
+            if len(computedIRs) == len(room.mic_array):
+ 
+                folderpath = f"{RenderARGS["exportPath"]}"
+                wavFileName = f"{sourceLabel}{micID}-{times+1}.wav"
+                fileName = f"{folderpath}/{wavFileName}"
+
+                if not os.path.exists(folderpath):
+                    os.makedirs(folderpath)
+
+                signal = exportIRToWav(
+                    computedIRs=computedIRs,
+                    norm=False,
+                    fileName=fileName,
+                )
+
+                t.show(f">Export {wavFileName} {micIndex+1}/{len(computedIRs)}")
+                micIndex += 1
+            else:
+                t.show(
+                    f"There is {len(computedIRs)} computed IRs for {len(room.mic_array)} microphones"
+                )
+                raise Exception(f"IR data is missing some Microphones indexes")
 
 
-# attempting to add source in room externally to catch a common unresolved persistent error
-atmptSources = 0
-while atmptSources < 3:
-    try:
-        room.add_source(
-            [-1.75, 9.15, 3.3572],
-            # [1.75, 9.15, 3.3572]
-            # [3.0, 2.0, 3.3572],
-            # [-3.0, 2.0, 3.3572],
-            # [-3.35, -1.0, 1.4],
-            # [0.0, -1.0, 1.4],
-            # [3.35, -1.0, 1.4],
-        )
-        break
-    except ValueError:
-        atmptSources += 1
-        t.show(f">>>failed adding source {atmptSources}/3 attempts")
-t.show(f"added source OK")
-
-room.set_ray_tracing(
-    n_rays=RenderARGS["RT_n_rays"], receiver_radius=RenderARGS["RT_receiver_radius"]
-)  # default =0.5
-
-# compute the rir
-t.show("processing image_source_model...")
-room.image_source_model()
-if RenderARGS["useRayTracing"]:
-    t.show("processing ray_tracing...")
-    room.ray_tracing()
-t.show("compute_rir")
-room.compute_rir()
-t.show("plot_rir")
-room.plot_rir()
-
-#  On a enlevé ça : faut il le remettre ?
-""" 
-Simulate sound propagation
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# By calling :py:func:`~pyroomacoustics.room.Room.simulate`, a convolution of the
-# signal of each source (if not ``None``) will be performed with the
-# corresponding room impulse response. The output from the convolutions will be summed up
-# at the microphones. The result is stored in the ``signals`` attribute of ``room.mic_array``
-# with each row corresponding to one microphone.
-"""
-
-
-# The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
-computedIRs = room.rir
-
-if len(computedIRs) == len(room.mic_array):
-     for i in range(0, len(room.mic_array)):
-
-        folderpath = f"{RenderARGS["exportPath"]}"
-        wavFileName = f"{name}-{i+1}.wav"
-        # wavFileName = f"{name}.wav"
-        fileName = f"{folderpath}/{wavFileName}"
-
-        if not os.path.exists(folderpath):
-            os.makedirs(folderpath)
-
-        signal = exportIRToWav(
-            computedIRs=computedIRs,
-            norm=False,
-            fileName=fileName,
-            micIndex=(i),
-        )
-
-        t.show(f">Export {wavFileName} {i+1}/{len(computedIRs)}")
-
-else:
-    t.show(
-        f"There is {len(computedIRs)} computed IRs for {len(room.mic_array)} microphones"
-    )
-    raise Exception(f"IR data is missing some Microphones indexes")
-
-# show the room
-# room.plot(img_order=RenderARGS["IMS_Order"])
-# plt.show()
+# utiliser les maps pour le faire proprement au niveau du nommage
+# garder la structure des while
+# Rajouter 3 attempts au dessus du while micIndex
+# Rajouter une boucle for 3 au dessus de la boucle d'attempt
+# De façon à générer 3* la même IR et avoir 3 erreur
