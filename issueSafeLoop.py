@@ -8,18 +8,24 @@ from timer import Timer
 from pathlib import Path
 from scipy.io import wavfile
 
+# Timer to log elapsed time
+t = Timer()
+t.start()
 
 # IR computing parameters, except [Material, Mesh, Source-Micros locations]
 RenderARGS = {
-    "exportPath": "Generated-IRs/gitIgnored/issueFullLoop/TestJson",
+    "exportPath": "Generated-IRs/EXPORT",
     "fs": 44100,
     "IMS_Order": 1,
     "useRayTracing": True,
     "RT_receiver_radius": 2,
-    "RT_n_rays": 5,
+    "RT_n_rays": 5000,
 }
 
 JSONData = {}
+
+# add renderArgs to the json
+JSONData.update({"RenderARGS": RenderARGS})
 
 
 def makeJsonData(signal, name, wavName, sLabel, micID, sourcePos, micPos, showGraph):
@@ -62,9 +68,6 @@ def makeJsonData(signal, name, wavName, sLabel, micID, sourcePos, micPos, showGr
 
 
 def writeJsonFile():
-
-    # also add renderArgs to the json
-    JSONData.update({"RenderARGS": RenderARGS})
 
     #  encode dict as JSON
     data = json.dumps(JSONData, indent=1, ensure_ascii=True)
@@ -191,12 +194,6 @@ microphonesMap = {
     16: [-4.0, -8.5, 8.2],
 }
 
-# Timer to log elapsed time
-t = Timer()
-t.start()
-
-# try:
-
 # Build room from geometry
 walls = []
 for k, v in meshMatMap.items():
@@ -247,13 +244,13 @@ for sourceLabel, sourcePos in sourcesMap.items():
             except ValueError:
                 addSrcAttempts += 1
                 t.show(f">>>failed adding source {addSrcAttempts}/3 attempts")
-            t.show(f"added source OK")
+        t.show(f"added source OK")
 
-            if RenderARGS["useRayTracing"]:
-                room.set_ray_tracing(
-                    n_rays=RenderARGS["RT_n_rays"],
-                    receiver_radius=RenderARGS["RT_receiver_radius"],
-                )  # default =0.5
+        if RenderARGS["useRayTracing"]:
+            room.set_ray_tracing(
+                n_rays=RenderARGS["RT_n_rays"],
+                receiver_radius=RenderARGS["RT_receiver_radius"],
+            )  # default =0.5
 
         simulationAttempts = 0
         while simulationAttempts < 5:
@@ -273,9 +270,9 @@ for sourceLabel, sourcePos in sourcesMap.items():
                 t.show(f"compute_rir failed with {str(e)}")
                 simulationAttempts += 1
                 t.show(f">>>simulation failed {simulationAttempts}/5 attempts")
-                if simulationAttempts == 5:
-                    print("forcing JSON export")
-                    writeJsonFile()
+            if simulationAttempts == 5:
+                print("forcing JSON export")
+                writeJsonFile()
         t.show(f"simulation OK")
 
         # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
@@ -284,7 +281,7 @@ for sourceLabel, sourcePos in sourcesMap.items():
         if len(computedIRs) == len(room.mic_array):
 
             folderpath = f"{RenderARGS["exportPath"]}"
-            wavFileName = f"{sourceLabel}{micID}-1.wav"
+            wavFileName = f"{sourceLabel}{micID}.wav"
             # wavFileName = f"{sourceLabel}{micID}-{times+1}.wav"
             fileName = f"{folderpath}/{wavFileName}"
 
@@ -313,9 +310,6 @@ for sourceLabel, sourcePos in sourcesMap.items():
             )
             raise Exception(f"IR data is missing some Microphones indexes")
 
-    writeJsonFile()
-    t.show(">Json Export")
-    t.stop()
-
-# except KeyboardInterrupt:
-#     writeJsonFile()
+writeJsonFile()
+t.show(">Json Export")
+t.stop()
