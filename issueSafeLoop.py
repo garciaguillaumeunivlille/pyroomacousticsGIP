@@ -28,7 +28,7 @@ JSONData = {}
 JSONData.update({"RenderARGS": RenderARGS})
 
 
-def makeJsonData(signal, name, wavName, sLabel, micID, sourcePos, micPos, showGraph):
+def makeJsonData(signal, name, path, sLabel, micID, sourcePos, micPos, showGraph):
 
     # Get volume RootMinSquare sqr(avg(all [i]²))
     volume = pra.rms(signal)
@@ -49,7 +49,7 @@ def makeJsonData(signal, name, wavName, sLabel, micID, sourcePos, micPos, showGr
     compareVolume = compareLawfulVolume(dist, volume)
 
     irData = {
-        "IRPath": wavName,
+        "IRPath": path,
         "distance": truncate(dist, 6),
         "volume": truncate(volume, 6),
         "lawfulVolume": truncate(compareVolume[0], 5),
@@ -91,7 +91,8 @@ def truncate(f, n):
     if "e" in s or "E" in s:
         return "{0:.{1}f}".format(f, n)
     i, p, d = s.partition(".")
-    return ".".join([i, (d + "0" * n)[:n]])
+    truncated = ".".join([i, (d + "0" * n)[:n]])
+    return float(truncated)
 
 
 def writeRawIRs(jdata, filename):
@@ -194,6 +195,8 @@ microphonesMap = {
     16: [-4.0, -8.5, 8.2],
 }
 
+# ok B13    13: [-4.3, -2.5, 8.2],
+
 # Build room from geometry
 walls = []
 for k, v in meshMatMap.items():
@@ -219,96 +222,112 @@ for k, v in meshMatMap.items():
         )
 t.show("Done STL imports")
 
-# for times in range(0, 2):
-for sourceLabel, sourcePos in sourcesMap.items():
-    micIndex = 0
-    for micID, micPos in microphonesMap.items():
+try:
 
-        # Instanciating room with geometry and some render parameters
-        room = pra.Room(
-            walls,
-            fs=RenderARGS["fs"],
-            max_order=RenderARGS["IMS_Order"],
-            ray_tracing=RenderARGS["useRayTracing"],
-            air_absorption=True,
-        ).add_microphone_array(
-            np.c_[micPos],
-        )
+    # for times in range(0, 2):
+    for sourceLabel, sourcePos in sourcesMap.items():
+        micIndex = 0
+        for micID, micPos in microphonesMap.items():
 
-        # attempting to add source in room externally to catch a common unresolved persistent error
-        addSrcAttempts = 0
-        while addSrcAttempts < 3:
-            try:
-                room.add_source(sourcePos)
-                break
-            except ValueError:
-                addSrcAttempts += 1
-                t.show(f">>>failed adding source {addSrcAttempts}/3 attempts")
-        t.show(f"added source OK")
-
-        if RenderARGS["useRayTracing"]:
-            room.set_ray_tracing(
-                n_rays=RenderARGS["RT_n_rays"],
-                receiver_radius=RenderARGS["RT_receiver_radius"],
-            )  # default =0.5
-
-        simulationAttempts = 0
-        while simulationAttempts < 5:
-            try:
-                # compute the rir
-                t.show("processing image_source_model...")
-                room.image_source_model()
-                if RenderARGS["useRayTracing"]:
-                    t.show("processing ray_tracing...")
-                    room.ray_tracing()
-                t.show("compute_rir")
-                room.compute_rir()
-                t.show("plot_rir")
-                room.plot_rir()
-                break
-            except (ValueError, RuntimeError) as e:
-                t.show(f"compute_rir failed with {str(e)}")
-                simulationAttempts += 1
-                t.show(f">>>simulation failed {simulationAttempts}/5 attempts")
-            if simulationAttempts == 5:
-                print("forcing JSON export")
-                writeJsonFile()
-        t.show(f"simulation OK")
-
-        # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
-        computedIRs = room.rir
-
-        if len(computedIRs) == len(room.mic_array):
-
-            folderpath = f"{RenderARGS["exportPath"]}"
-            wavFileName = f"{sourceLabel}{micID}.wav"
-            # wavFileName = f"{sourceLabel}{micID}-{times+1}.wav"
-            fileName = f"{folderpath}/{wavFileName}"
-
-            if not os.path.exists(folderpath):
-                os.makedirs(folderpath)
-
-            signal = customExportIRToWav(computedIRs=computedIRs, fileName=fileName)
-
-            # store json data
-            makeJsonData(
-                signal,
-                fileName,
-                wavFileName,
-                sourceLabel,
-                micID,
-                sourcePos,
-                micPos,
-                showGraph=False,
+            # Instanciating room with geometry and some render parameters
+            room = pra.Room(
+                walls,
+                fs=RenderARGS["fs"],
+                max_order=RenderARGS["IMS_Order"],
+                ray_tracing=RenderARGS["useRayTracing"],
+                air_absorption=True,
+            ).add_microphone_array(
+                np.c_[micPos],
             )
 
-            t.show(f">Export {wavFileName} {micIndex+1}/{len(computedIRs)}")
-            micIndex += 1
-        else:
-            t.show(
-                f"There is {len(computedIRs)} computed IRs for {len(room.mic_array)} microphones"
-            )
-            raise Exception(f"IR data is missing some Microphones indexes")
+            # attempting to add source in room externally to catch a common unresolved persistent error
+            addSrcAttempts = 0
+            while addSrcAttempts < 3:
+                try:
+                    room.add_source(sourcePos)
+                    break
+                except ValueError:
+                    addSrcAttempts += 1
+                    t.show(f">>>failed adding source {addSrcAttempts}/3 attempts")
+            t.show(f"added source OK")
+
+            if RenderARGS["useRayTracing"]:
+                room.set_ray_tracing(
+                    n_rays=RenderARGS["RT_n_rays"],
+                    receiver_radius=RenderARGS["RT_receiver_radius"],
+                )  # default =0.5
+
+            simulationAttempts = 0
+            simulationSuccess = False
+            while simulationAttempts < 5:
+                try:
+                    # compute the rir
+                    t.show("processing image_source_model...")
+                    room.image_source_model()
+                    if RenderARGS["useRayTracing"]:
+                        t.show("processing ray_tracing...")
+                        room.ray_tracing()
+                    t.show("compute_rir")
+                    room.compute_rir()
+                    t.show("plot_rir")
+                    room.plot_rir()
+                    simulationSuccess = True
+                    break
+                except (ValueError, RuntimeError) as e:
+                    t.show(f"compute_rir failed with {str(e)}")
+                    simulationAttempts += 1
+                    t.show(f">>>simulation failed {simulationAttempts}/5 attempts")
+                if simulationAttempts == 5:
+                    # print("forcing JSON export")
+                    # writeJsonFile()
+                    JSONData.update({f"[SKIPPED] {sourceLabel}{micID}": "skipped after 5 failed attempts"})
+                    break
+            t.show(f"simulation OK")
+
+            if(simulationSuccess):
+
+                # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
+                computedIRs = room.rir
+
+                if len(computedIRs) == len(room.mic_array):
+                
+                    folderpath = f"{RenderARGS["exportPath"]}"
+                    name = f"{sourceLabel}{micID}"
+                    wavFileName = f"{name}.wav"
+                    # wavFileName = f"{sourceLabel}{micID}-{times+1}.wav"
+                    fileName = f"{folderpath}/{wavFileName}"
+    
+                    if not os.path.exists(folderpath):
+                        os.makedirs(folderpath)
+    
+                    signal = customExportIRToWav(computedIRs=computedIRs, fileName=fileName)
+    
+                    # store json data
+                    makeJsonData(
+                        signal,
+                        name,
+                        fileName,
+                        sourceLabel,
+                        micID,
+                        sourcePos,
+                        micPos,
+                        showGraph=False,
+                    )
+    
+                    t.show(f">Export {wavFileName} {micIndex+1}/{len(computedIRs)}")
+                    micIndex += 1
+                else:
+                    t.show(
+                        f"There is {len(computedIRs)} computed IRs for {len(room.mic_array)} microphones"
+                    )
+                    raise Exception(f"IR data is missing some Microphones indexes")
+
+            else:
+                micIndex += 1
+
+except KeyboardInterrupt:
+    JSONData.update({"SCRIPT INTERUPTED AT": t.getElapsedTime()})
+    writeJsonFile()
 
 writeJsonFile()
 t.show(">Json Export")

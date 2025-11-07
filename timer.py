@@ -1,5 +1,6 @@
 import time
 
+
 class TimerError(Exception):
     """A custom exception used to report errors in use of Timer class"""
 
@@ -15,19 +16,23 @@ class Timer:
 
         self._start_time = time.perf_counter()
 
-    def stop(self, fromText=""):
+    def getElapsedTime(self):
+        """returns elapsed time"""
+        return time.perf_counter() - self._start_time
+        
+    def stop(self, fromText="STOP"):
         """Stop the timer, and report the elapsed time"""
         if self._start_time is None:
             raise TimerError(f"Timer is not running. Use  .start() to start it")
 
-        elapsed_time = time.perf_counter() - self._start_time
+        print(f"{fromText} Total elapsed time : {self.getElapsedTime():0.4f} seconds")
         self._start_time = None
-        print(f"{fromText} Total elapsed time : {elapsed_time:0.4f} seconds")
 
-    def show(self, fromText=""):
+    def show(self, fromText="SHOW"):
         """print time elapsed without stopping timer"""
         if self._start_time is None:
             raise TimerError(f"Timer is not running. Use .start() to start it")
 
-        elapsed_time = time.perf_counter() - self._start_time
-        print(f"{fromText} elapsed time : {elapsed_time:0.4f} seconds")
+        print(f"{fromText} elapsed time : {self.getElapsedTime():0.4f} seconds")
+
+
