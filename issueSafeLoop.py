@@ -189,13 +189,14 @@ microphonesMap = {
     10: [5.1, -2.0, 5.8],
     11: [4.0, -8.5, 5.8],
     12: [-4.0, -8.5, 5.8],
-    13: [-5.1, -2.0, 8.2],
+    13: [-4.4, -2.0, 8.2],
     14: [5.1, -2.0, 8.2],
     15: [4.0, -8.5, 8.2],
-    16: [-4.0, -8.5, 8.2],
+    16: [-3.6, -8.5, 8.2],
 }
 
-# ok B13    13: [-4.3, -2.5, 8.2],
+# 13: [-5.1, -2.0, 8.2], initial 13
+# 16: [-4.0, -8.5, 8.2], initial 16
 
 # Build room from geometry
 walls = []
@@ -280,28 +281,34 @@ try:
                 if simulationAttempts == 5:
                     # print("forcing JSON export")
                     # writeJsonFile()
-                    JSONData.update({f"[SKIPPED] {sourceLabel}{micID}": "skipped after 5 failed attempts"})
+                    JSONData.update(
+                        {
+                            f"[SKIPPED] {sourceLabel}{micID}": "skipped after 5 failed attempts"
+                        }
+                    )
                     break
             t.show(f"simulation OK")
 
-            if(simulationSuccess):
+            if simulationSuccess:
 
                 # The attribute rir is a list of lists so that the outer list is on microphones and the inner list over sources.
                 computedIRs = room.rir
 
                 if len(computedIRs) == len(room.mic_array):
-                
+
                     folderpath = f"{RenderARGS["exportPath"]}"
                     name = f"{sourceLabel}{micID}"
                     wavFileName = f"{name}.wav"
                     # wavFileName = f"{sourceLabel}{micID}-{times+1}.wav"
                     fileName = f"{folderpath}/{wavFileName}"
-    
+
                     if not os.path.exists(folderpath):
                         os.makedirs(folderpath)
-    
-                    signal = customExportIRToWav(computedIRs=computedIRs, fileName=fileName)
-    
+
+                    signal = customExportIRToWav(
+                        computedIRs=computedIRs, fileName=fileName
+                    )
+
                     # store json data
                     makeJsonData(
                         signal,
@@ -313,7 +320,7 @@ try:
                         micPos,
                         showGraph=False,
                     )
-    
+
                     t.show(f">Export {wavFileName} {micIndex+1}/{len(computedIRs)}")
                     micIndex += 1
                 else:
